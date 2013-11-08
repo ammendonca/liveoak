@@ -35,6 +35,12 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- javax.mail -->
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>
+
         <!-- io.netty -->
         <dependency>
             <groupId>io.netty</groupId>

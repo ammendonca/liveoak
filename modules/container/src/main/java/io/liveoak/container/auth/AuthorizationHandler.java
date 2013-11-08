@@ -5,21 +5,25 @@
  */
 package io.liveoak.container.auth;
 
-import io.liveoak.container.DefaultRequestContext;
 import io.liveoak.container.ResourceErrorResponse;
 import io.liveoak.container.ResourceRequest;
+import io.liveoak.security.impl.AuthConstants;
 import io.liveoak.security.impl.AuthServicesHolder;
-import io.liveoak.security.impl.DefaultSecurityContext;
+import io.liveoak.security.impl.DefaultAuthToken;
 import io.liveoak.security.impl.SimpleLogger;
 import io.liveoak.security.spi.AuthToken;
 import io.liveoak.security.spi.AuthorizationRequestContext;
 import io.liveoak.security.spi.AuthorizationService;
-import io.liveoak.security.spi.TokenManager;
-import io.liveoak.security.spi.TokenValidationException;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.SecurityContext;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Handler for checking authorization of current request. It's independent of protocol. It delegates the work to {@link AuthorizationService}.
@@ -45,26 +49,13 @@ public class AuthorizationHandler extends SimpleChannelInboundHandler<ResourceRe
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ResourceRequest req) throws Exception {
         try {
-            AuthToken token;
+            // TODO Creating AuthToken here is temporary
+            AuthToken token = createAuthToken(req.requestContext().getSecurityContext());
+
             AuthorizationService authService = AuthServicesHolder.getInstance().getAuthorizationService();
-            TokenManager tokenManager = AuthServicesHolder.getInstance().getTokenManager();
             RequestContext reqContext = req.requestContext();
 
-            try {
-                token = tokenManager.getAndValidateToken(reqContext);
-            } catch (TokenValidationException e) {
-                String message = "Error when obtaining token: " + e.getMessage();
-                log.warn(message);
-                if (log.isTraceEnabled()) {
-                    log.trace(message, e);
-                }
-
-                sendAuthorizationError(ctx, req);
-                return;
-            }
-
             if (authService.isAuthorized(new AuthorizationRequestContext(token, reqContext))) {
-                establishSecurityContext(token, reqContext);
                 ctx.fireChannelRead(req);
             } else {
                 sendAuthorizationError(ctx, req);
@@ -75,18 +66,33 @@ public class AuthorizationHandler extends SimpleChannelInboundHandler<ResourceRe
         }
     }
 
-    protected void sendAuthorizationError(ChannelHandlerContext ctx, ResourceRequest req) {
-        ctx.writeAndFlush(new ResourceErrorResponse(req, ResourceErrorResponse.ErrorType.NOT_AUTHORIZED));
+    private AuthToken createAuthToken(SecurityContext sc) {
+        if (sc.isAuthenticated()) {
+            Set<String> realmRoles = new HashSet<>();
+            Map<String, Set<String>> appRoles = new HashMap<>();
+
+            for (String role : sc.getRoles()) {
+                int i = role.indexOf('/');
+                if (i == -1) {
+                    realmRoles.add(role);
+                } else {
+                    String a = role.substring(0, i);
+                    String r = role.substring(i + 1);
+                    if (!appRoles.containsKey(a)) {
+                        appRoles.put(a, new HashSet<>());
+                    }
+                    appRoles.get(a).add(r);
+                }
+            }
+
+            return new DefaultAuthToken(sc.getSubject(), sc.getRealm(), "app", -1, -1, sc.lastVerified(), null, realmRoles, appRoles);
+        } else {
+            return new DefaultAuthToken(null, null, null, -1, -1, 01, null, Collections.emptySet(), Collections.emptyMap());
+        }
     }
 
-    protected void establishSecurityContext(AuthToken token, RequestContext reqContext) {
-        // Looks like a hack...
-        if (reqContext instanceof DefaultRequestContext) {
-            SecurityContext securityContext = DefaultSecurityContext.createFromAuthToken(token);
-            ((DefaultRequestContext) reqContext).setSecurityContext(securityContext);
-        } else {
-            log.warn("Can't establish securityContext to RequestContext " + reqContext);
-        }
+    protected void sendAuthorizationError(ChannelHandlerContext ctx, ResourceRequest req) {
+        ctx.writeAndFlush(new ResourceErrorResponse(req, ResourceErrorResponse.ErrorType.NOT_AUTHORIZED));
     }
 
     @Override

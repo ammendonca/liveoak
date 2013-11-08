@@ -8,10 +8,11 @@ package io.liveoak.security.impl;
 import io.liveoak.security.spi.ApplicationIdResolver;
 import io.liveoak.security.spi.ApplicationMetadata;
 import io.liveoak.security.spi.AuthPersister;
+import io.liveoak.security.spi.AuthorizationDecision;
 import io.liveoak.security.spi.AuthorizationPolicy;
 import io.liveoak.security.spi.AuthorizationPolicyEntry;
+import io.liveoak.security.spi.AuthorizationRequestContext;
 import io.liveoak.security.spi.AuthorizationService;
-import io.liveoak.security.spi.TokenManager;
 import io.liveoak.spi.ResourcePath;
 
 import java.util.HashSet;
@@ -33,7 +34,6 @@ public class AuthServicesHolder {
 
     private final AuthorizationService authorizationService;
     private final AuthPersister authPersister;
-    private final TokenManager tokenManager;
 
     // TODO: Probably remove
     private ApplicationIdResolver applicationIdResolver;
@@ -44,7 +44,6 @@ public class AuthServicesHolder {
     private AuthServicesHolder() {
         this.authorizationService = new PolicyBasedAuthorizationService();
         this.authPersister = new InMemoryAuthPersister();
-        this.tokenManager = new DefaultTokenManager();
         this.applicationIdResolver = (resourceReq) -> AuthConstants.DEFAULT_APP_ID;
 
         // Register default loaders
@@ -69,10 +68,6 @@ public class AuthServicesHolder {
         return authPersister;
     }
 
-    public TokenManager getTokenManager() {
-        return tokenManager;
-    }
-
     public ApplicationIdResolver getApplicationIdResolver() {
         return applicationIdResolver;
     }
@@ -83,7 +78,7 @@ public class AuthServicesHolder {
 
     private void registerDefaultAppConfig() {
         ApplicationMetadata appMetadata = new ApplicationMetadata(AuthConstants.DEFAULT_APP_ID, AuthConstants.DEFAULT_REALM_NAME,
-                AuthConstants.DEFAULT_APPLICATION_NAME, AuthConstants.DEFAULT_PUBLIC_KEY);
+                AuthConstants.DEFAULT_APPLICATION_NAME);
         authPersister.registerApplicationMetadata(appMetadata);
     }
 
@@ -108,6 +103,20 @@ public class AuthServicesHolder {
 
         authPersister.registerPolicy(AuthConstants.DEFAULT_APP_ID, simplePolicyEntry);
         authPersister.registerPolicy(AuthConstants.DEFAULT_APP_ID, droolsPolicyEntry);
+
+        AuthorizationPolicyEntry tmpStoragePolicy = new AuthorizationPolicyEntry("storage", new AuthorizationPolicy() {
+            @Override
+            public void init() {
+            }
+
+            @Override
+            public AuthorizationDecision isAuthorized(AuthorizationRequestContext authRequestContext) {
+                Set<String> roles = authRequestContext.getAuthToken().getApplicationRolesMap().get("test-app");
+                return roles != null && roles.contains("storage") ? AuthorizationDecision.ACCEPT : AuthorizationDecision.REJECT;
+            }
+        });
+        tmpStoragePolicy.addIncludedResourcePrefix(new ResourcePath("storage"));
+        authPersister.registerPolicy(AuthConstants.DEFAULT_APP_ID, tmpStoragePolicy);
     }
 
     private AuthorizationPolicy loadPolicy(String policyClassname) {

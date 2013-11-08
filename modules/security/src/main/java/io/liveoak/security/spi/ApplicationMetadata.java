@@ -5,8 +5,6 @@
  */
 package io.liveoak.security.spi;
 
-import io.liveoak.security.utils.PemUtils;
-
 import java.security.PublicKey;
 
 /**
@@ -20,15 +18,11 @@ public class ApplicationMetadata {
     // Parameters from Keycloak
     private final String realmName;
     private final String applicationName;
-    private final String publicKeyPem;
 
-    private volatile PublicKey publicKey;
-
-    public ApplicationMetadata(String applicationId, String realmName, String applicationName, String publicKeyPem) {
+    public ApplicationMetadata(String applicationId, String realmName, String applicationName) {
         this.applicationId = applicationId;
         this.realmName = realmName;
         this.applicationName = applicationName;
-        this.publicKeyPem = publicKeyPem;
     }
 
     public String getApplicationId() {
@@ -41,16 +35,5 @@ public class ApplicationMetadata {
 
     public String getApplicationName() {
         return applicationName;
-    }
-
-    public PublicKey getPublicKey() {
-        if (publicKey == null) {
-            try {
-                this.publicKey = PemUtils.decodePublicKey(publicKeyPem);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return publicKey;
     }
 }

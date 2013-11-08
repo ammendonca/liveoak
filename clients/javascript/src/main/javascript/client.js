@@ -49,4 +49,6 @@ var LiveOak = function( options ) {
             callback( data );
         });
     };
+
+    this.auth = new Keycloak( options.host, options.port + 1, options.secure );
 };

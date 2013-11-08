@@ -34,6 +34,7 @@
         <drools.version>5.6.0.CR1</drools.version>
         <janino.version>2.5.16</janino.version>
         <jgit.version>3.1.0.201310021548-r</jgit.version>
+        <javamail.version>1.4.7</javamail.version>
 
         <!-- Maven Plugins -->
         <version.compiler.plugin>3.1</version.compiler.plugin>
@@ -164,6 +165,11 @@
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit</artifactId>
                 <version>${jgit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${javamail.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>

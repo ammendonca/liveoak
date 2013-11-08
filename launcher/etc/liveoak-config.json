@@ -52,4 +52,13 @@ resources: {
         config: {
         }
     }
+
+    auth: {
+        type: 'jboss-module',
+        module-id: 'io.liveoak.keycloak',
+        class-name: 'io.liveoak.keycloak.KeycloakRootResource',
+        config: {
+            import: '${user.dir}/keycloak-config.json'
+        }
+    }
 }}
