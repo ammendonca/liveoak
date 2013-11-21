@@ -12,6 +12,7 @@ public class ResourceErrorResponse extends ResourceResponse {
 
     public enum ErrorType {
         NOT_AUTHORIZED,
+        FORBIDDEN,
         NOT_ACCEPTABLE,
         NO_SUCH_RESOURCE,
         RESOURCE_ALREADY_EXISTS,

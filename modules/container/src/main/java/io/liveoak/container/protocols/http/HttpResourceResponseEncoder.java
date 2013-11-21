@@ -64,6 +64,10 @@ public class HttpResourceResponseEncoder extends MessageToMessageEncoder<Resourc
                 if (msg instanceof ResourceErrorResponse) {
                     switch (((ResourceErrorResponse) msg).errorType()) {
                         case NOT_AUTHORIZED:
+                            responseStatusCode = HttpResponseStatus.UNAUTHORIZED.code();
+                            responseMessage = HttpResponseStatus.UNAUTHORIZED.reasonPhrase();
+                            break;
+                        case FORBIDDEN:
                             responseStatusCode = HttpResponseStatus.FORBIDDEN.code();
                             responseMessage = HttpResponseStatus.FORBIDDEN.reasonPhrase();
                             break;

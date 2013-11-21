@@ -61,8 +61,8 @@ public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
 
                     DefaultSecurityContext sc = (DefaultSecurityContext) req.requestContext().getSecurityContext();
                     sc.init(realm, subject, Collections.unmodifiableSet(roles), issuedAt);
-                } catch (ResourceException e) {
-                    sendError(ctx, req, ResourceErrorResponse.ErrorType.NOT_ACCEPTABLE);
+                } catch (Throwable t) {
+                    sendError(ctx, req, ResourceErrorResponse.ErrorType.NOT_AUTHORIZED);
                     return;
                 }
             }
