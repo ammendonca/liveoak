@@ -43,7 +43,7 @@ public class TokenResource implements Resource {
             responder.resourceRead(new Resource() {
                 @Override
                 public Resource parent() {
-                    return this;
+                    return TokenResource.this;
                 }
 
                 @Override

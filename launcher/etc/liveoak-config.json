@@ -51,7 +51,7 @@ resources: {
         class-name: 'io.liveoak.scheduler.SchedulerResource',
         config: {
         }
-    }
+    },
 
     auth: {
         type: 'jboss-module',

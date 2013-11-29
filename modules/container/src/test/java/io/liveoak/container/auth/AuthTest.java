@@ -92,14 +92,14 @@ public class AuthTest {
 
         // Authorization no-ok. Protected collections 'protected1' and 'protected2' should be forbidden without token
         httpMethod = createHttpMethod("GET", "http://localhost:8080/authTest/protected1");
-        sendRequestAndCheckStatus(httpMethod, HttpStatus.SC_FORBIDDEN);
+        sendRequestAndCheckStatus(httpMethod, HttpStatus.SC_UNAUTHORIZED);
         System.err.println("F");
 
         httpMethod = createHttpMethod("POST", "http://localhost:8080/authTest/protected1");
-        sendRequestAndCheckStatus(httpMethod, HttpStatus.SC_FORBIDDEN);
+        sendRequestAndCheckStatus(httpMethod, HttpStatus.SC_UNAUTHORIZED);
 
         httpMethod = createHttpMethod("POST", "http://localhost:8080/authTest/protected2");
-        sendRequestAndCheckStatus(httpMethod, HttpStatus.SC_FORBIDDEN);
+        sendRequestAndCheckStatus(httpMethod, HttpStatus.SC_UNAUTHORIZED);
 
         // Authorization ok. Collection 'protected2' is available for readMember without token
         httpMethod = createHttpMethod("GET", "http://localhost:8080/authTest/protected2");

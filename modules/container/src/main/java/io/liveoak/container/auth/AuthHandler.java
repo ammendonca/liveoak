@@ -10,6 +10,7 @@ import io.liveoak.container.DefaultSecurityContext;
 import io.liveoak.container.DirectConnector;
 import io.liveoak.container.ResourceErrorResponse;
 import io.liveoak.container.ResourceRequest;
+import io.liveoak.security.impl.SimpleLogger;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.ResourceException;
 import io.liveoak.spi.SecurityContext;
@@ -29,6 +30,9 @@ import java.util.Set;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
+
+    // TODO: replace with real logging
+    private static final SimpleLogger log = new SimpleLogger(AuthHandler.class);
 
     public static final String AUTH_TYPE = "bearer";
 
@@ -62,6 +66,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
                     DefaultSecurityContext sc = (DefaultSecurityContext) req.requestContext().getSecurityContext();
                     sc.init(realm, subject, Collections.unmodifiableSet(roles), issuedAt);
                 } catch (Throwable t) {
+                    log.error("Catched throwable: " + t.getMessage());
                     sendError(ctx, req, ResourceErrorResponse.ErrorType.NOT_AUTHORIZED);
                     return;
                 }

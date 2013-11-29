@@ -46,7 +46,6 @@
         <artifact name="org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final"/>
         <artifact name="org.jboss.logging:jboss-logging:3.1.1.GA"/>
         <artifact name="org.scannotation:scannotation:1.0.3"/>
-        <artifact name="org.slf4j:slf4j-api:1.6.1"/>
 
         <!-- RESTEasy -->
         <artifact name="org.jboss.resteasy:async-http-servlet-3.0:3.0.5.Final"/>
@@ -73,5 +72,6 @@
         <module name="javax.xml.bind.api"/>
         <module name="javax.mail.api"/>
         <module name="io.liveoak.spi"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>
