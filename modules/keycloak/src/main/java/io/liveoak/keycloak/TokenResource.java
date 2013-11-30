@@ -52,7 +52,7 @@ public class TokenResource implements Resource {
                 }
 
                 @Override
-                public void readProperties(RequestContext ctx, PropertySink sink) {
+                public void readProperties(RequestContext ctx, PropertySink sink) throws Exception {
                     sink.accept("realm", token.getAudience());
                     sink.accept("subject", token.getPrincipal());
                     sink.accept("issued-at", new Date(token.getIssuedAt()));

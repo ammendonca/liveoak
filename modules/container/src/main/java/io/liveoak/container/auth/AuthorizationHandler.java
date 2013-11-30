@@ -50,7 +50,7 @@ public class AuthorizationHandler extends SimpleChannelInboundHandler<ResourceRe
     protected void channelRead0(ChannelHandlerContext ctx, ResourceRequest req) throws Exception {
         try {
             // TODO Creating AuthToken here is temporary
-            AuthToken token = createAuthToken(req.requestContext().getSecurityContext());
+            AuthToken token = createAuthToken(req.requestContext().securityContext());
 
             AuthorizationService authService = AuthServicesHolder.getInstance().getAuthorizationService();
             RequestContext reqContext = req.requestContext();

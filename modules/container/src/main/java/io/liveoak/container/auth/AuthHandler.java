@@ -44,13 +44,13 @@ public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ResourceRequest req) throws Exception {
-        String auth = req.requestAttributes().getAttribute(HttpHeaders.Names.AUTHORIZATION, String.class);
+        RequestContext requestContext = req.requestContext();
+        String auth = requestContext.requestAttributes().getAttribute(HttpHeaders.Names.AUTHORIZATION, String.class);
         if (auth != null) {
             String[] split = auth.split(" ");
             if (split[0].toLowerCase().equals(AUTH_TYPE)) {
                 try {
-                    RequestContext requestContext = new RequestContext.Builder().build();
-                    ResourceState state = connector.read(requestContext, "/auth/token-info/" + split[1]);
+                    ResourceState state = connector.read(new RequestContext.Builder().build(), "/auth/token-info/" + split[1]);
 
                     String realm = (String) state.getProperty("realm");
                     String subject = (String) state.getProperty("subject");
@@ -63,7 +63,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
 
                     long issuedAt = ((Date) state.getProperty("issued-at")).getTime();
 
-                    DefaultSecurityContext sc = (DefaultSecurityContext) req.requestContext().getSecurityContext();
+                    DefaultSecurityContext sc = (DefaultSecurityContext) requestContext.securityContext();
                     sc.init(realm, subject, Collections.unmodifiableSet(roles), issuedAt);
                 } catch (Throwable t) {
                     log.error("Catched throwable: " + t.getMessage());
