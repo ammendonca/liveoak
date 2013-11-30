@@ -1,5 +1,38 @@
+window._oauth = (function () {
+    var oauth = {};
 
-Keycloak = function(host, port, secure) {
+    var params = window.location.search.substring(1).split('&');
+    for (var i = 0; i < params.length; i++) {
+        var p = params[i].split('=');
+        switch (decodeURIComponent(p[0])) {
+            case 'code':
+                oauth.code = p[1];
+                break;
+            case 'error':
+                oauth.error = p[1];
+                break;
+            case 'state':
+                oauth.state = p[1];
+                break;
+        }
+    }
+
+    oauth.callback = (oauth.code && oauth.state) || (oauth.error && oauth.state);
+
+    if (oauth.callback) {
+        console.debug('oauth callback');
+
+        if (oauth.state && oauth.state.indexOf('#') != -1) {
+            oauth.fragment = window._oauth.state.substr(window._oauth.state.indexOf('#') + 1);
+        }
+
+        window.history.replaceState({}, null, location.protocol + '//' + location.host + location.pathname);
+    }
+
+    return oauth;
+}());
+
+Keycloak = function (host, port, secure) {
     this._host = host;
     this._port = port;
     this._secure - secure;
@@ -11,8 +44,12 @@ Keycloak.prototype = {
         return this._tokenParsed
     },
 
-    get user() {
-        return this._user;
+    get username() {
+        return this._tokenParsed && this._tokenParsed.prn;
+    },
+
+    get realm() {
+        return this._tokenParsed && this._tokenParsed.realm;
     },
 
     get realmAccess() {
@@ -27,35 +64,43 @@ Keycloak.prototype = {
         return this._token;
     },
 
-    get tokenParsed() {
-        return this._tokenParsed;
-    },
-
-    init: function(config) {
+    init: function (config) {
         this._clientId = config.clientId;
         this._clientSecret = config.clientSecret;
         this._realm = config.realm || 'default';
         this._redirectUri = config.redirectUri || (location.protocol + '//' + location.hostname + (location.port && (':' + location.port)) + location.pathname);
 
-        if (!this._processCallback()) {
-            window.location.href = this._createLoginUrl() + '&prompt=none';
+        if (window._oauth.callback) {
+            this._processCallback();
+        } else if (config.onload) {
+            switch (config.onload) {
+                case 'login-required' :
+                    this.login();
+                    break;
+                case 'check-sso' :
+                    this.login(false);
+                    break;
+            }
         }
+
+        this._callback = config.callback;
+        this._loadProfile = config.loadProfile;
     },
 
-    login: function() {
-        window.location.href = this._createLoginUrl();
+    login: function (prompt) {
+        window.location.href = this._createLoginUrl(prompt);
     },
 
-    logout: function() {
+    logout: function () {
         window.location.href = this._createLogoutUrl();
     },
 
-    hasRealmAccess: function(role) {
+    hasRealmAccess: function (role) {
         var access = this.realmAccess;
         return access && access.roles.indexOf(role) >= 0 || false;
     },
 
-    hasResourceAccess: function(role, resource) {
+    hasResourceAccess: function (role, resource) {
         var access = this.resourceAccess[resource || this._clientId];
         return access && access.roles.indexOf(role) >= 0 || false;
     },
@@ -64,101 +109,99 @@ Keycloak.prototype = {
         return (this._secure ? 'https' : 'http') + '://' + this._host + ':' + this._port + '/auth-server/rest/realms/' + encodeURIComponent(this._realm);
     },
 
-    _processCallback: function() {
-        var code = this._queryParam('code');
-        var error = this._queryParam('error');
-        var state = this._queryParam('state');
+    _processCallback: function () {
+        var code = window._oauth.code;
+        var error = window._oauth.error;
+        var state = window._oauth.state;
 
-        if (error) {
-            this._updateLocation(state);
-            this.authCallback && this.authCallback(false);
-            return true;
-        } else if (code) {
+        if (code) {
             if (state == sessionStorage.state) {
                 var params = 'code=' + code + '&client_id=' + encodeURIComponent(this._clientId) + '&password=' + encodeURIComponent(this._clientSecret);
-                var url = this._baseUrl + '/tokens/access/codes';
+                var codeUrl = this._baseUrl + '/tokens/access/codes';
 
                 var tokenReq = new XMLHttpRequest();
-                tokenReq.open('POST', url, true);
+                tokenReq.open('POST', codeUrl, true);
                 tokenReq.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-                var kc = this;
-                tokenReq.onreadystatechange = function() {
+                var inst = this;
+                tokenReq.onreadystatechange = function () {
                     if (tokenReq.readyState == 4) {
                         if (tokenReq.status == 200) {
-                            kc._token = JSON.parse(tokenReq.responseText)['access_token'];
-                            kc._tokenParsed = kc._parseToken(kc._token);
+                            console.debug('oauth received token');
 
-                            var url = kc._baseUrl + '/account';
-                            var profileReq = new XMLHttpRequest();
-                            profileReq.open('GET', url, true);
-                            profileReq.setRequestHeader('Accept', 'application/json');
-                            profileReq.setRequestHeader('Authorization', 'bearer ' + kc._token);
+                            inst._token = JSON.parse(tokenReq.responseText)['access_token'];
+                            inst._tokenParsed = inst._parseToken(inst._token);
 
-                            profileReq.onreadystatechange = function() {
-                                if (profileReq.readyState == 4) {
-                                    if (profileReq.status == 200) {
-                                        kc._user = JSON.parse(profileReq.responseText);
-                                        kc.authCallback && kc.authCallback(true);
-                                    } else {
-                                        kc.authCallback && kc.authCallback(false);
+                            window._oauth.token = inst._token;
+
+                            inst._callback && inst._callback('authenticated');
+
+                            if (this._loadProfile) {
+                                var profileUrl = inst._baseUrl + '/account';
+                                var profileReq = new XMLHttpRequest();
+                                profileReq.open('GET', profileUrl, true);
+                                profileReq.setRequestHeader('Accept', 'application/json');
+                                profileReq.setRequestHeader('Authorization', 'bearer ' + inst._token);
+
+                                profileReq.onreadystatechange = function () {
+                                    if (profileReq.readyState == 4) {
+                                        if (profileReq.status == 200) {
+                                            console.debug('oauth loaded profile');
+
+                                            inst._user = JSON.parse(profileReq.responseText);
+                                            inst._callback && inst._callback('authenticated-profile');
+                                        }
                                     }
                                 }
+
+                                profileReq.send();
                             }
                         } else {
-                            kc.authCallback && kc.authCallback(false);
+                            inst._callback && inst._callback(false);
                         }
 
-                        profileReq.send();
                     }
                 };
 
                 tokenReq.send(params);
+            } else if (error) {
+                this._callback('error');
             }
-
-            this._updateLocation(state);
-            return true;
-        } else {
-            return false;
         }
     },
 
-    _parseToken : function(token) {
+    _parseToken: function (token) {
         return JSON.parse(atob(token.split('.')[1]));
     },
 
-    _createLoginUrl: function() {
+    _createLoginUrl: function (prompt) {
         var state = this._createUUID();
-        if (location.hash) {
-            state += '#' + location.hash;
-        }
+//        if (location.hash) {
+//            state += '#' + location.hash;
+//        }
         sessionStorage.state = state;
         var url = this._baseUrl
             + '/tokens/login'
-            + '?client_id=' +  encodeURIComponent(this._clientId)
-            + '&redirect_uri=' +  encodeURIComponent(this._redirectUri)
-            + '&state=' +  encodeURIComponent(state)
+            + '?client_id=' + encodeURIComponent(this._clientId)
+            + '&redirect_uri=' + encodeURIComponent(this._redirectUri)
+            + '&state=' + encodeURIComponent(state)
             + '&response_type=code';
+
+        if (prompt == false) {
+            url += '&prompt=none';
+        }
+
         return url;
     },
 
-    _createLogoutUrl: function() {
+    _createLogoutUrl: function () {
         var url = this._baseUrl
             + '/tokens/logout'
-            + '?redirect_uri=' +  encodeURIComponent(this._redirectUri);
+            + '?redirect_uri=' + encodeURIComponent(this._redirectUri);
         return url;
     },
 
-    _updateLocation: function(state) {
-        var s = decodeURIComponent(state);
-        var fragment = '';
-        if (s && s.indexOf('#') != -1) {
-            fragment = s.substr(s.indexOf('#') + 1);
-        }
-        window.history.replaceState({}, document.title, location.protocol + '//' + location.host + location.pathname + fragment);
-    },
-
-    _createUUID: function() {
+    _createUUID: function () {
         var s = [];
         var hexDigits = '0123456789abcdef';
         for (var i = 0; i < 36; i++) {
@@ -169,16 +212,6 @@ Keycloak.prototype = {
         s[8] = s[13] = s[18] = s[23] = '-';
         var uuid = s.join('');
         return uuid;
-    },
-
-    _queryParam: function(name) {
-        var params = window.location.search.substring(1).split('&');
-        for (var i = 0; i < params.length; i++) {
-            var p = params[i].split('=');
-            if (decodeURIComponent(p[0]) == name) {
-                return p[1];
-            }
-        }
     }
 
 }
