@@ -95,12 +95,12 @@ Keycloak.prototype = {
         window.location.href = this._createLogoutUrl();
     },
 
-    hasRealmAccess: function (role) {
+    hasRealmRole: function (role) {
         var access = this.realmAccess;
         return access && access.roles.indexOf(role) >= 0 || false;
     },
 
-    hasResourceAccess: function (role, resource) {
+    hasResourceRole: function (role, resource) {
         var access = this.resourceAccess[resource || this._clientId];
         return access && access.roles.indexOf(role) >= 0 || false;
     },
