@@ -3,7 +3,7 @@ package io.liveoak.security.policy.uri.complex;
 import io.liveoak.security.policy.uri.complex.RulesProcessingResult;
 import io.liveoak.security.policy.uri.complex.URIMatcher;
 import io.liveoak.security.policy.uri.complex.RequestContextDecorator;
-import io.liveoak.security.spi.AuthorizationDecision;
+import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.security.spi.AuthToken;
 import io.liveoak.spi.RequestType;
 import io.liveoak.spi.ResourcePath;

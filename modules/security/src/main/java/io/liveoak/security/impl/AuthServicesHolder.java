@@ -5,14 +5,14 @@
  */
 package io.liveoak.security.impl;
 
+import io.liveoak.security.spi.AppMetadata;
 import io.liveoak.security.spi.ApplicationIdResolver;
-import io.liveoak.security.spi.ApplicationMetadata;
 import io.liveoak.security.spi.AuthPersister;
-import io.liveoak.security.spi.AuthorizationDecision;
-import io.liveoak.security.spi.AuthorizationPolicy;
-import io.liveoak.security.spi.AuthorizationPolicyEntry;
-import io.liveoak.security.spi.AuthorizationRequestContext;
-import io.liveoak.security.spi.AuthorizationService;
+import io.liveoak.security.spi.AuthzDecision;
+import io.liveoak.security.spi.AuthzPolicy;
+import io.liveoak.security.spi.AuthzPolicyEntry;
+import io.liveoak.security.spi.AuthzRequestContext;
+import io.liveoak.security.spi.AuthzService;
 import io.liveoak.spi.ResourcePath;
 
 import java.util.HashSet;
@@ -32,7 +32,7 @@ public class AuthServicesHolder {
 
     private static AuthServicesHolder INSTANCE = new AuthServicesHolder();
 
-    private final AuthorizationService authorizationService;
+    private final AuthzService authzService;
     private final AuthPersister authPersister;
 
     // TODO: Probably remove
@@ -42,7 +42,7 @@ public class AuthServicesHolder {
     private final Set<ClassLoader> policyLoaders = new HashSet<>();
 
     private AuthServicesHolder() {
-        this.authorizationService = new PolicyBasedAuthorizationService();
+        this.authzService = new PolicyBasedAuthzService();
         this.authPersister = new InMemoryAuthPersister();
         this.applicationIdResolver = (resourceReq) -> AuthConstants.DEFAULT_APP_ID;
 
@@ -60,8 +60,8 @@ public class AuthServicesHolder {
         return INSTANCE;
     }
 
-    public AuthorizationService getAuthorizationService() {
-        return authorizationService;
+    public AuthzService getAuthzService() {
+        return authzService;
     }
 
     public AuthPersister getAuthPersister() {
@@ -77,7 +77,7 @@ public class AuthServicesHolder {
     }
 
     private void registerDefaultAppConfig() {
-        ApplicationMetadata appMetadata = new ApplicationMetadata(AuthConstants.DEFAULT_APP_ID, AuthConstants.DEFAULT_REALM_NAME,
+        AppMetadata appMetadata = new AppMetadata(AuthConstants.DEFAULT_APP_ID, AuthConstants.DEFAULT_REALM_NAME,
                 AuthConstants.DEFAULT_APPLICATION_NAME);
         authPersister.registerApplicationMetadata(appMetadata);
     }
@@ -88,38 +88,38 @@ public class AuthServicesHolder {
 
     public void registerDefaultPolicies() {
         // Register simple demo policy as default one
-        AuthorizationPolicy simplePolicy = loadPolicy("io.liveoak.security.policy.uri.simple.DemoSimpleURIPolicy");
+        AuthzPolicy simplePolicy = loadPolicy("io.liveoak.security.policy.uri.simple.DemoSimpleURIPolicy");
         simplePolicy.init();
-        AuthorizationPolicyEntry simplePolicyEntry = new AuthorizationPolicyEntry("someId", simplePolicy);
+        AuthzPolicyEntry simplePolicyEntry = new AuthzPolicyEntry("someId", simplePolicy);
         simplePolicyEntry.addIncludedResourcePrefix(new ResourcePath());
         // Don't test URI under /droolsTest/foo/bar/* with simple policy
         simplePolicyEntry.addExcludedResourcePrefix(new ResourcePath("/droolsTest/foo/bar"));
 
         // Register drools based URIPolicy for context /droolsTest
-        AuthorizationPolicy droolsPolicy = loadPolicy("io.liveoak.security.policy.uri.complex.DemoURIPolicy");
+        AuthzPolicy droolsPolicy = loadPolicy("io.liveoak.security.policy.uri.complex.DemoURIPolicy");
         droolsPolicy.init();
-        AuthorizationPolicyEntry droolsPolicyEntry = new AuthorizationPolicyEntry("someId2", droolsPolicy);
+        AuthzPolicyEntry droolsPolicyEntry = new AuthzPolicyEntry("someId2", droolsPolicy);
         droolsPolicyEntry.addIncludedResourcePrefix(new ResourcePath("droolsTest"));
 
         authPersister.registerPolicy(AuthConstants.DEFAULT_APP_ID, simplePolicyEntry);
         authPersister.registerPolicy(AuthConstants.DEFAULT_APP_ID, droolsPolicyEntry);
 
-        AuthorizationPolicyEntry tmpStoragePolicy = new AuthorizationPolicyEntry("storage", new AuthorizationPolicy() {
+        AuthzPolicyEntry tmpStoragePolicy = new AuthzPolicyEntry("storage", new AuthzPolicy() {
             @Override
             public void init() {
             }
 
             @Override
-            public AuthorizationDecision isAuthorized(AuthorizationRequestContext authRequestContext) {
+            public AuthzDecision isAuthorized(AuthzRequestContext authRequestContext) {
                 Set<String> roles = authRequestContext.getAuthToken().getApplicationRolesMap().get("test-app");
-                return roles != null && roles.contains("storage") ? AuthorizationDecision.ACCEPT : AuthorizationDecision.REJECT;
+                return roles != null && roles.contains("storage") ? AuthzDecision.ACCEPT : AuthzDecision.REJECT;
             }
         });
         tmpStoragePolicy.addIncludedResourcePrefix(new ResourcePath("storage"));
         authPersister.registerPolicy(AuthConstants.DEFAULT_APP_ID, tmpStoragePolicy);
     }
 
-    private AuthorizationPolicy loadPolicy(String policyClassname) {
+    private AuthzPolicy loadPolicy(String policyClassname) {
         Class<?> clazz = null;
         for (ClassLoader cl : this.policyLoaders) {
             clazz = loadPolicyClass(policyClassname, cl);
@@ -134,7 +134,7 @@ public class AuthServicesHolder {
         }
 
         try {
-            return (AuthorizationPolicy) clazz.newInstance();
+            return (AuthzPolicy) clazz.newInstance();
         } catch (Exception e) {
             log.error("Unable to instantiate instance of policy class " + clazz);
             throw new IllegalStateException("Unable to instantiate instance of policy class " + clazz);

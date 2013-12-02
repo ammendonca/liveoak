@@ -7,9 +7,9 @@ package io.liveoak.security.policy.uri.complex;
 
 import io.liveoak.security.impl.SimpleLogger;
 import io.liveoak.security.spi.AuthToken;
-import io.liveoak.security.spi.AuthorizationDecision;
-import io.liveoak.security.spi.AuthorizationPolicy;
-import io.liveoak.security.spi.AuthorizationRequestContext;
+import io.liveoak.security.spi.AuthzDecision;
+import io.liveoak.security.spi.AuthzPolicy;
+import io.liveoak.security.spi.AuthzRequestContext;
 import io.liveoak.spi.RequestContext;
 import org.drools.RuleBase;
 import org.drools.RuleBaseConfiguration;
@@ -29,11 +29,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Complex URI policy based on drools engine
+ * Policy for authorization of resources based on resource URI. Policy implementation is based on drools engine
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class URIPolicy implements AuthorizationPolicy {
+public class URIPolicy implements AuthzPolicy {
 
     // TODO: Replace with real logging
     private static final SimpleLogger log = new SimpleLogger(URIPolicy.class);
@@ -60,7 +60,7 @@ public class URIPolicy implements AuthorizationPolicy {
         // Workaround for https://issues.jboss.org/browse/DROOLS-329 TODO: Remove when not needed or move to better place
         System.setProperty("drools.dialect.java.compiler", "JANINO");
 
-        RuleBaseConfiguration ruleBaseConfig = new RuleBaseConfiguration(URIPolicy.class.getClassLoader(), AuthorizationPolicy.class.getClassLoader());
+        RuleBaseConfiguration ruleBaseConfig = new RuleBaseConfiguration(URIPolicy.class.getClassLoader(), AuthzPolicy.class.getClassLoader());
         ruleBase = RuleBaseFactory.newRuleBase(ruleBaseConfig);
 
         // Add DRL with functions
@@ -70,9 +70,9 @@ public class URIPolicy implements AuthorizationPolicy {
     }
 
 
-    public void addURIPolicyEntry(URIPolicyEntry uriPolicyEntry) {
+    public void addURIPolicyEntry(URIPolicyRule uriPolicyRule) {
         InputStream templateStream = URIPolicy.class.getClassLoader().getResourceAsStream("templates/URIPolicyTemplate.drl");
-        URIPolicyTemplateDataProvider tdp = new URIPolicyTemplateDataProvider(uriPolicyEntry);
+        URIPolicyTemplateDataProvider tdp = new URIPolicyTemplateDataProvider(uriPolicyRule);
         DataProviderCompiler converter = new DataProviderCompiler();
         String drl = converter.compile(tdp, templateStream);
 
@@ -89,7 +89,7 @@ public class URIPolicy implements AuthorizationPolicy {
 
 
     @Override
-    public AuthorizationDecision isAuthorized(AuthorizationRequestContext authRequestContext) {
+    public AuthzDecision isAuthorized(AuthzRequestContext authRequestContext) {
         checkInitializationCompleted();
 
         RequestContext reqContext = authRequestContext.getRequestContext();

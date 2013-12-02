@@ -15,24 +15,24 @@ import java.util.Set;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class AuthorizationPolicyEntry {
+public class AuthzPolicyEntry {
 
     private final String id;
     private final Set<ResourcePath> includedResourcePrefixes = new HashSet<>();
     private final Set<ResourcePath> excludedResourcePrefixes = new HashSet<>();
-    private final AuthorizationPolicy authorizationPolicy;
+    private final AuthzPolicy authzPolicy;
 
-    public AuthorizationPolicyEntry(String id, AuthorizationPolicy authorizationPolicy) {
+    public AuthzPolicyEntry(String id, AuthzPolicy authzPolicy) {
         this.id = id;
-        this.authorizationPolicy = authorizationPolicy;
+        this.authzPolicy = authzPolicy;
     }
 
     public String getId() {
         return id;
     }
 
-    public AuthorizationPolicy getAuthorizationPolicy() {
-        return authorizationPolicy;
+    public AuthzPolicy getAuthzPolicy() {
+        return authzPolicy;
     }
 
     public Set<ResourcePath> getIncludedResourcePrefixes() {
@@ -43,22 +43,22 @@ public class AuthorizationPolicyEntry {
         return Collections.unmodifiableSet(excludedResourcePrefixes);
     }
 
-    public AuthorizationPolicyEntry addIncludedResourcePrefix(ResourcePath path) {
+    public AuthzPolicyEntry addIncludedResourcePrefix(ResourcePath path) {
         includedResourcePrefixes.add(path);
         return this;
     }
 
-    public AuthorizationPolicyEntry addIncludedResourcePrefix(String uriPrefix) {
+    public AuthzPolicyEntry addIncludedResourcePrefix(String uriPrefix) {
         includedResourcePrefixes.add(new ResourcePath(uriPrefix));
         return this;
     }
 
-    public AuthorizationPolicyEntry addExcludedResourcePrefix(ResourcePath path) {
+    public AuthzPolicyEntry addExcludedResourcePrefix(ResourcePath path) {
         excludedResourcePrefixes.add(path);
         return this;
     }
 
-    public AuthorizationPolicyEntry addExcludedResourcePrefix(String uriPrefix) {
+    public AuthzPolicyEntry addExcludedResourcePrefix(String uriPrefix) {
         excludedResourcePrefixes.add(new ResourcePath(uriPrefix));
         return this;
     }
@@ -81,11 +81,11 @@ public class AuthorizationPolicyEntry {
 
     @Override
     public String toString() {
-        return new StringBuilder("AuthorizationPolicyEntry [ ")
+        return new StringBuilder("AuthzPolicyEntry [ ")
                 .append("id=").append(id)
                 .append(", includedResourcePrefixes=").append(includedResourcePrefixes)
                 .append(", excludedResourcePrefixes=").append(excludedResourcePrefixes)
-                .append(", authorizationPolicy=").append(authorizationPolicy)
+                .append(", authzPolicy=").append(authzPolicy)
                 .append(" ]").toString();
     }
 

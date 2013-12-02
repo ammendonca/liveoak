@@ -40,32 +40,6 @@ public class DefaultAuthToken implements AuthToken {
         this.applicationRolesMap = applicationRolesMap;
     }
 
-    public DefaultAuthToken(JsonWebToken internalToken) {
-        JsonWebToken.Claims claims = internalToken.getClaims();
-        this.username = claims.getSubject();
-        this.realmName = claims.getAudience();
-        this.applicationName = claims.getIssuedFor();
-        this.expiration = claims.getExpiration();
-        this.notBefore = claims.getNotBefore();
-        this.issuedAt = claims.getIssuedAt();
-        this.issuer = claims.getIssuer();
-
-        JsonWebToken.Access realmAccess = claims.getRealmAccess();
-        this.realmRoles = realmAccess != null ? Collections.unmodifiableSet(realmAccess.getRoles()) : Collections.EMPTY_SET;
-
-        Map<String, JsonWebToken.Access> appAccess = claims.getResourceAccess();
-        if (appAccess == null) {
-            this.applicationRolesMap = Collections.EMPTY_MAP;
-        } else {
-            Map<String, Set<String>> applicationRolesMap = new HashMap<>();
-            for (Map.Entry<String, JsonWebToken.Access> entry : appAccess.entrySet()) {
-                Set<String> appRoles = entry.getValue() != null ? entry.getValue().getRoles() : Collections.EMPTY_SET;
-                applicationRolesMap.put(entry.getKey(), appRoles);
-            }
-            this.applicationRolesMap = Collections.unmodifiableMap(applicationRolesMap);
-        }
-    }
-
     @Override
     public String getUsername() {
         return username;

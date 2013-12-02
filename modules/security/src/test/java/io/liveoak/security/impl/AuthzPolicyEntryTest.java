@@ -5,7 +5,7 @@
  */
 package io.liveoak.security.impl;
 
-import io.liveoak.security.spi.AuthorizationPolicyEntry;
+import io.liveoak.security.spi.AuthzPolicyEntry;
 import io.liveoak.spi.ResourcePath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,26 +13,26 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class AuthorizationPolicyEntryTest {
+public class AuthzPolicyEntryTest {
 
     @Test
     public void testPath1() {
-        AuthorizationPolicyEntry entry1 = new AuthorizationPolicyEntry(null, null);
+        AuthzPolicyEntry entry1 = new AuthzPolicyEntry(null, null);
         entry1.addIncludedResourcePrefix("/").addIncludedResourcePrefix("/foo").addExcludedResourcePrefix("/foo/bar");
 
-        AuthorizationPolicyEntry entry2 = new AuthorizationPolicyEntry(null, null);
+        AuthzPolicyEntry entry2 = new AuthzPolicyEntry(null, null);
         entry2.addIncludedResourcePrefix("/foo");
 
-        AuthorizationPolicyEntry entry3 = new AuthorizationPolicyEntry(null, null);
+        AuthzPolicyEntry entry3 = new AuthzPolicyEntry(null, null);
         entry3.addIncludedResourcePrefix("/foo/bar").addIncludedResourcePrefix("/foo/baz");
 
-        AuthorizationPolicyEntry entry4 = new AuthorizationPolicyEntry(null, null);
+        AuthzPolicyEntry entry4 = new AuthzPolicyEntry(null, null);
         entry4.addIncludedResourcePrefix("/").addExcludedResourcePrefix("/foo");
 
-        AuthorizationPolicyEntry entry5 = new AuthorizationPolicyEntry(null, null);
+        AuthzPolicyEntry entry5 = new AuthzPolicyEntry(null, null);
         entry5.addIncludedResourcePrefix("/").addExcludedResourcePrefix("/foo/bar").addExcludedResourcePrefix("/foo/baz");
 
-        AuthorizationPolicyEntry entry6 = new AuthorizationPolicyEntry(null, null);
+        AuthzPolicyEntry entry6 = new AuthzPolicyEntry(null, null);
 
         ResourcePath path1 = new ResourcePath("/");
         Assert.assertTrue(entry1.isResourceMapped(path1));

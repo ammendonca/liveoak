@@ -11,14 +11,14 @@ import io.liveoak.spi.RequestContext;
  * Encapsulates all data needed for authorization decision
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
- * @see AuthorizationService
+ * @see AuthzService
  */
-public class AuthorizationRequestContext {
+public class AuthzRequestContext {
 
     private final AuthToken authToken;
     private final RequestContext requestContext;
 
-    public AuthorizationRequestContext(AuthToken authToken, RequestContext requestContext) {
+    public AuthzRequestContext(AuthToken authToken, RequestContext requestContext) {
         this.requestContext = requestContext;
         this.authToken = authToken;
     }

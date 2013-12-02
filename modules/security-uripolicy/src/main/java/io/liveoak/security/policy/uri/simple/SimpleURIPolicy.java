@@ -8,9 +8,9 @@ package io.liveoak.security.policy.uri.simple;
 
 import io.liveoak.security.impl.AuthServicesHolder;
 import io.liveoak.security.policy.uri.RolesContainer;
-import io.liveoak.security.spi.AuthorizationDecision;
-import io.liveoak.security.spi.AuthorizationPolicy;
-import io.liveoak.security.spi.AuthorizationRequestContext;
+import io.liveoak.security.spi.AuthzDecision;
+import io.liveoak.security.spi.AuthzPolicy;
+import io.liveoak.security.spi.AuthzRequestContext;
 import io.liveoak.spi.RequestContext;
 
 import java.util.Collection;
@@ -26,30 +26,30 @@ import java.util.Set;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class SimpleURIPolicy implements AuthorizationPolicy {
+public class SimpleURIPolicy implements AuthzPolicy {
 
     public static final String WILDCARD = "*";
 
     public static final RolesContainer ALLOW_ALL_ROLES_CONTAINER = new RolesContainer() {
 
         @Override
-        public AuthorizationDecision isRealmRoleAllowed(String roleName) {
-            return AuthorizationDecision.ACCEPT;
+        public AuthzDecision isRealmRoleAllowed(String roleName) {
+            return AuthzDecision.ACCEPT;
         }
 
         @Override
-        public AuthorizationDecision isApplicationRoleAllowed(String roleName) {
-            return AuthorizationDecision.ACCEPT;
+        public AuthzDecision isApplicationRoleAllowed(String roleName) {
+            return AuthzDecision.ACCEPT;
         }
 
         @Override
-        public AuthorizationDecision isRealmRolesAllowed(Collection<String> roles) {
-            return AuthorizationDecision.ACCEPT;
+        public AuthzDecision isRealmRolesAllowed(Collection<String> roles) {
+            return AuthzDecision.ACCEPT;
         }
 
         @Override
-        public AuthorizationDecision isApplicationRolesAllowed(Collection<String> roles) {
-            return AuthorizationDecision.ACCEPT;
+        public AuthzDecision isApplicationRolesAllowed(Collection<String> roles) {
+            return AuthzDecision.ACCEPT;
         }
     };
 
@@ -62,7 +62,7 @@ public class SimpleURIPolicy implements AuthorizationPolicy {
     }
 
     @Override
-    public AuthorizationDecision isAuthorized(AuthorizationRequestContext authRequestContext) {
+    public AuthzDecision isAuthorized(AuthzRequestContext authRequestContext) {
         RequestContext req = authRequestContext.getRequestContext();
         List<String> segments = req.resourcePath().segments();
         int segmentsSize = segments.size();
@@ -89,7 +89,7 @@ public class SimpleURIPolicy implements AuthorizationPolicy {
         String appId = AuthServicesHolder.getInstance().getApplicationIdResolver().resolveAppId(req);
         String appName = AuthServicesHolder.getInstance().getAuthPersister().getApplicationMetadata(appId).getApplicationName();
 
-        AuthorizationDecision authDecision = checkPermissions(rolesContainer, authRequestContext, appName);
+        AuthzDecision authDecision = checkPermissions(rolesContainer, authRequestContext, appName);
         return authDecision;
     }
 
@@ -102,22 +102,22 @@ public class SimpleURIPolicy implements AuthorizationPolicy {
         permissions.recursivePut(keys, policy);
     }
 
-    protected AuthorizationDecision checkPermissions(RolesContainer rolesContainer, AuthorizationRequestContext authRequestContext, String applicationName) {
+    protected AuthzDecision checkPermissions(RolesContainer rolesContainer, AuthzRequestContext authRequestContext, String applicationName) {
 
         Set<String> realmRoles = getRealmRoles(authRequestContext);
         Set<String> appRoles = getAppRoles(authRequestContext, applicationName);
 
-        AuthorizationDecision realmRolesAuthDecision = rolesContainer.isRealmRolesAllowed(realmRoles);
-        AuthorizationDecision appRolesDecision = rolesContainer.isApplicationRolesAllowed(appRoles);
+        AuthzDecision realmRolesAuthDecision = rolesContainer.isRealmRolesAllowed(realmRoles);
+        AuthzDecision appRolesDecision = rolesContainer.isApplicationRolesAllowed(appRoles);
 
         return realmRolesAuthDecision.mergeDecision(appRolesDecision);
     }
 
-    private Set<String> getRealmRoles(AuthorizationRequestContext authRequestContext) {
+    private Set<String> getRealmRoles(AuthzRequestContext authRequestContext) {
         return authRequestContext.getAuthToken().getRealmRoles();
     }
 
-    private Set<String> getAppRoles(AuthorizationRequestContext authRequestContext, String appName) {
+    private Set<String> getAppRoles(AuthzRequestContext authRequestContext, String appName) {
         if (!authRequestContext.isRequestAuthenticated()) {
             return Collections.emptySet();
         }

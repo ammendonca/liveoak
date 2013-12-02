@@ -12,7 +12,7 @@ import io.liveoak.spi.RequestType;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class URIPolicyEntry {
+public class URIPolicyRule {
 
     private final int priority;
     private final String uriPattern;
@@ -26,8 +26,8 @@ public class URIPolicyEntry {
     private final String allowedUsers;
     private final String deniedUsers;
 
-    private URIPolicyEntry(int priority, String uriPattern, String queryParamsCondition, String requestType, String allowedRealmRoles, String deniedRealmRoles,
-                           String allowedApplicationRoles, String deniedApplicationRoles, String allowedUsers, String deniedUsers) {
+    private URIPolicyRule(int priority, String uriPattern, String queryParamsCondition, String requestType, String allowedRealmRoles, String deniedRealmRoles,
+                          String allowedApplicationRoles, String deniedApplicationRoles, String allowedUsers, String deniedUsers) {
         this.priority = priority;
         this.uriPattern = uriPattern;
         this.queryParamsCondition = queryParamsCondition;
@@ -41,7 +41,7 @@ public class URIPolicyEntry {
         this.deniedUsers = deniedUsers;
     }
 
-    public static URIPolicyEntry createEntry(int priority, String uriPattern, String queryParamsCondition, String requestType,
+    public static URIPolicyRule createEntry(int priority, String uriPattern, String queryParamsCondition, String requestType,
                                              String allowedRealmRoles, String deniedRealmRoles,
                                              String allowedApplicationRoles, String deniedApplicationRoles, String allowedUsers, String deniedUsers) {
 
@@ -59,7 +59,7 @@ public class URIPolicyEntry {
         // RequestType must be wildcard or some of RequestType enums
         requestType = validateAndFormatRequestType(requestType);
 
-        return new URIPolicyEntry(priority, formattedPattern, queryParamsCondition, requestType,
+        return new URIPolicyRule(priority, formattedPattern, queryParamsCondition, requestType,
                 allowedRealmRoles, deniedRealmRoles, allowedApplicationRoles, deniedApplicationRoles, allowedUsers, deniedUsers);
     }
 

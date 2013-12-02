@@ -8,7 +8,7 @@ package io.liveoak.security.spi;
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public interface AuthorizationPolicy {
+public interface AuthzPolicy {
 
     /**
      * Perform some needed initialization steps for this policy.
@@ -21,5 +21,5 @@ public interface AuthorizationPolicy {
      * @param authRequestContext encapsulates all info about current request, token etc
      * @return true if request is authorized
      */
-    AuthorizationDecision isAuthorized(AuthorizationRequestContext authRequestContext);
+    AuthzDecision isAuthorized(AuthzRequestContext authRequestContext);
 }

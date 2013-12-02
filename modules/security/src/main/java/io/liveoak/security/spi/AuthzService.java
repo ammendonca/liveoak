@@ -10,7 +10,7 @@ package io.liveoak.security.spi;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public interface AuthorizationService {
+public interface AuthzService {
 
     /**
      * Decide if request is authorized or not
@@ -18,5 +18,5 @@ public interface AuthorizationService {
      * @param authRequestContext encapsulates all info about current request, token etc
      * @return true if request is authorized
      */
-    boolean isAuthorized(AuthorizationRequestContext authRequestContext);
+    boolean isAuthorized(AuthzRequestContext authRequestContext);
 }

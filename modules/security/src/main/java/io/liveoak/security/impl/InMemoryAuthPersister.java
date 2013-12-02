@@ -5,9 +5,9 @@
  */
 package io.liveoak.security.impl;
 
-import io.liveoak.security.spi.ApplicationMetadata;
+import io.liveoak.security.spi.AppMetadata;
 import io.liveoak.security.spi.AuthPersister;
-import io.liveoak.security.spi.AuthorizationPolicyEntry;
+import io.liveoak.security.spi.AuthzPolicyEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,28 +21,28 @@ import java.util.Map;
 public class InMemoryAuthPersister implements AuthPersister {
 
     // TODO: Thread-safety
-    private Map<String, ApplicationMetadata> applicationMetadataMap = new HashMap<>();
-    private Map<String, List<AuthorizationPolicyEntry>> authPolicies = new HashMap<>();
+    private Map<String, AppMetadata> applicationMetadataMap = new HashMap<>();
+    private Map<String, List<AuthzPolicyEntry>> authPolicies = new HashMap<>();
 
     @Override
-    public void registerApplicationMetadata(ApplicationMetadata appMetadata) {
+    public void registerApplicationMetadata(AppMetadata appMetadata) {
         applicationMetadataMap.put(appMetadata.getApplicationId(), appMetadata);
     }
 
     @Override
-    public ApplicationMetadata getApplicationMetadata(String applicationKey) {
+    public AppMetadata getApplicationMetadata(String applicationKey) {
         return applicationMetadataMap.get(applicationKey);
     }
 
     @Override
-    public List<AuthorizationPolicyEntry> getRegisteredPolicies(String applicationKey) {
-        List<AuthorizationPolicyEntry> policies = authPolicies.get(applicationKey);
+    public List<AuthzPolicyEntry> getRegisteredPolicies(String applicationKey) {
+        List<AuthzPolicyEntry> policies = authPolicies.get(applicationKey);
         return policies == null ? Collections.EMPTY_LIST : Collections.unmodifiableList(policies);
     }
 
     @Override
-    public void registerPolicy(String applicationKey, AuthorizationPolicyEntry policy) {
-        List<AuthorizationPolicyEntry> policies = authPolicies.get(applicationKey);
+    public void registerPolicy(String applicationKey, AuthzPolicyEntry policy) {
+        List<AuthzPolicyEntry> policies = authPolicies.get(applicationKey);
         if (policies == null) {
             policies = new ArrayList<>();
             authPolicies.put(applicationKey, policies);

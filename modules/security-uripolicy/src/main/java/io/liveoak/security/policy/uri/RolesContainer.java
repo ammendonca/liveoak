@@ -6,7 +6,7 @@
 package io.liveoak.security.policy.uri;
 
 import io.liveoak.security.spi.AuthToken;
-import io.liveoak.security.spi.AuthorizationDecision;
+import io.liveoak.security.spi.AuthzDecision;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -153,71 +153,71 @@ public class RolesContainer {
 
     // CHECKS
 
-    public AuthorizationDecision isRealmRoleAllowed(String roleName) {
+    public AuthzDecision isRealmRoleAllowed(String roleName) {
         if (deniedRealmRoles != null && (deniedRealmRoles.contains(roleName) || deniedRealmRoles.contains("*"))) {
-            return AuthorizationDecision.REJECT;
+            return AuthzDecision.REJECT;
         } else if (allowedRealmRoles != null && (allowedRealmRoles.contains(roleName) || allowedRealmRoles.contains("*"))) {
-            return AuthorizationDecision.ACCEPT;
+            return AuthzDecision.ACCEPT;
         }
 
-        return AuthorizationDecision.IGNORE;
+        return AuthzDecision.IGNORE;
     }
 
-    public AuthorizationDecision isApplicationRoleAllowed(String roleName) {
+    public AuthzDecision isApplicationRoleAllowed(String roleName) {
         if (deniedApplicationRoles != null && (deniedApplicationRoles.contains(roleName) || deniedRealmRoles.contains("*"))) {
-            return AuthorizationDecision.REJECT;
+            return AuthzDecision.REJECT;
         } else if (allowedApplicationRoles != null && (allowedApplicationRoles.contains(roleName) || allowedApplicationRoles.contains("*"))) {
-            return AuthorizationDecision.ACCEPT;
+            return AuthzDecision.ACCEPT;
         }
 
-        return AuthorizationDecision.IGNORE;
+        return AuthzDecision.IGNORE;
     }
 
-    public AuthorizationDecision isRealmRolesAllowed(Collection<String> roles) {
+    public AuthzDecision isRealmRolesAllowed(Collection<String> roles) {
         boolean anyAllowed = false;
         for (String role : roles) {
-            AuthorizationDecision authDecision = isRealmRoleAllowed(role);
-            if (authDecision == AuthorizationDecision.REJECT) {
+            AuthzDecision authDecision = isRealmRoleAllowed(role);
+            if (authDecision == AuthzDecision.REJECT) {
                 // REJECT always wins
-                return AuthorizationDecision.REJECT;
-            } else if (authDecision == AuthorizationDecision.ACCEPT) {
+                return AuthzDecision.REJECT;
+            } else if (authDecision == AuthzDecision.ACCEPT) {
                 anyAllowed = true;
             }
         }
 
-        return anyAllowed ? AuthorizationDecision.ACCEPT : AuthorizationDecision.IGNORE;
+        return anyAllowed ? AuthzDecision.ACCEPT : AuthzDecision.IGNORE;
     }
 
-    public AuthorizationDecision isApplicationRolesAllowed(Collection<String> roles) {
+    public AuthzDecision isApplicationRolesAllowed(Collection<String> roles) {
         boolean anyAllowed = false;
         for (String role : roles) {
-            AuthorizationDecision authDecision = isApplicationRoleAllowed(role);
-            if (authDecision == AuthorizationDecision.REJECT) {
+            AuthzDecision authDecision = isApplicationRoleAllowed(role);
+            if (authDecision == AuthzDecision.REJECT) {
                 // REJECT always wins
-                return AuthorizationDecision.REJECT;
-            } else if (authDecision == AuthorizationDecision.ACCEPT) {
+                return AuthzDecision.REJECT;
+            } else if (authDecision == AuthzDecision.ACCEPT) {
                 anyAllowed = true;
             }
         }
 
-        return anyAllowed ? AuthorizationDecision.ACCEPT : AuthorizationDecision.IGNORE;
+        return anyAllowed ? AuthzDecision.ACCEPT : AuthzDecision.IGNORE;
     }
 
-    public AuthorizationDecision isTokenAllowed(AuthToken token) {
-        AuthorizationDecision realmDecision = isRealmRolesAllowed(token.getRealmRoles());
-        AuthorizationDecision appRolesDecision = isApplicationRolesAllowed(token.getApplicationRoles());
-        AuthorizationDecision usernameDecision = isUserAllowed(token.getUsername());
+    public AuthzDecision isTokenAllowed(AuthToken token) {
+        AuthzDecision realmDecision = isRealmRolesAllowed(token.getRealmRoles());
+        AuthzDecision appRolesDecision = isApplicationRolesAllowed(token.getApplicationRoles());
+        AuthzDecision usernameDecision = isUserAllowed(token.getUsername());
         return realmDecision.mergeDecision(appRolesDecision).mergeDecision(usernameDecision);
     }
 
-    public AuthorizationDecision isUserAllowed(String username) {
+    public AuthzDecision isUserAllowed(String username) {
         if (deniedUsers != null && (deniedUsers.contains(username) || deniedUsers.contains("*"))) {
-            return AuthorizationDecision.REJECT;
+            return AuthzDecision.REJECT;
         } else if (allowedUsers != null && ((allowedUsers.contains(username)) || allowedUsers.contains("*"))) {
-            return AuthorizationDecision.ACCEPT;
+            return AuthzDecision.ACCEPT;
         }
 
-        return AuthorizationDecision.IGNORE;
+        return AuthzDecision.IGNORE;
     }
 
     // HELPER METHODS

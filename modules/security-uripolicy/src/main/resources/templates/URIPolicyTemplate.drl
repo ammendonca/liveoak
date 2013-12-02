@@ -20,7 +20,7 @@ import io.liveoak.security.policy.uri.complex.URIMatcher;
 import io.liveoak.security.policy.uri.complex.URIMatcherCache;
 import io.liveoak.security.policy.uri.complex.RequestContextDecorator;
 import io.liveoak.security.policy.uri.RolesContainer
-import io.liveoak.security.spi.AuthorizationDecision;
+import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.security.spi.AuthToken;
 import io.liveoak.spi.RequestType;
 import io.liveoak.spi.ResourcePath;
@@ -56,7 +56,7 @@ then
   container.addAllAllowedUsers( Arrays.asList(new String[] { @{ALLOWED_USERS} }) );
   container.addAllDeniedUsers( Arrays.asList(new String[] { @{DENIED_USERS} }) );
 
-  AuthorizationDecision decision = container.isTokenAllowed($token);
+  AuthzDecision decision = container.isTokenAllowed($token);
 
   modify ($rulesProcessingResult) {
     mergeDecision(decision);
@@ -74,7 +74,7 @@ template "Check finished"
 rule "CheckFinished_@{POLICY_COUNTER}"
 salience @{CHECK_PRIORITY}
 when
-  RulesProcessingResult(decision == AuthorizationDecision.ACCEPT || == AuthorizationDecision.REJECT, lastProcessedPriority > @{CHECK_PRIORITY})
+  RulesProcessingResult(decision == AuthzDecision.ACCEPT || == AuthzDecision.REJECT, lastProcessedPriority > @{CHECK_PRIORITY})
   $endSemaphore: EndSemaphore( finished == false )
 then
   System.out.println("Triggered rule: CheckFinished_@{POLICY_COUNTER}, priority: " + @{CHECK_PRIORITY} + " . Going to stop processing other URI rules");

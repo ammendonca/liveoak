@@ -6,7 +6,7 @@
 package io.liveoak.container;
 
 import io.liveoak.container.auth.AuthHandler;
-import io.liveoak.container.auth.AuthorizationHandler;
+import io.liveoak.container.auth.AuthzHandler;
 import io.liveoak.container.protocols.ProtocolDetector;
 import io.liveoak.container.protocols.http.HttpResourceRequestDecoder;
 import io.liveoak.container.protocols.http.HttpResourceResponseEncoder;
@@ -99,7 +99,7 @@ public class PipelineConfigurator {
         pipeline.addLast("http-resourceRead-decoder", new HttpResourceRequestDecoder(this.container.getCodecManager()));
         pipeline.addLast("http-resourceRead-encoder", new HttpResourceResponseEncoder(this.container.getCodecManager()));
         pipeline.addLast("auth-handler", new AuthHandler(this.container.directConnector()));
-        pipeline.addLast("authz-handler", new AuthorizationHandler());
+        pipeline.addLast("authz-handler", new AuthzHandler());
         //pipeline.addLast( new DebugHandler( "server-2" ) );
         pipeline.addLast("subscription-watcher", new SubscriptionWatcher(this.container.getSubscriptionManager()));
         pipeline.addLast("object-handler", new ResourceHandler(this.container));

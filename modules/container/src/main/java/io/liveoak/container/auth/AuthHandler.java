@@ -75,15 +75,6 @@ public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
         ctx.fireChannelRead(req);
     }
 
-    private Set<String> getSet(ResourceState state, String name) {
-        Set<String> set = new HashSet<>();
-        Collection<? extends String> col = (Collection<? extends String>) state.getProperty(name);
-        if (col != null) {
-            set.addAll(col);
-        }
-        return Collections.unmodifiableSet(set);
-    }
-
     private void sendError(ChannelHandlerContext ctx, ResourceRequest req, ResourceErrorResponse.ErrorType errorType) {
         ctx.writeAndFlush(new ResourceErrorResponse(req, errorType));
     }

@@ -7,13 +7,12 @@ package io.liveoak.container.auth;
 
 import io.liveoak.container.ResourceErrorResponse;
 import io.liveoak.container.ResourceRequest;
-import io.liveoak.security.impl.AuthConstants;
 import io.liveoak.security.impl.AuthServicesHolder;
 import io.liveoak.security.impl.DefaultAuthToken;
 import io.liveoak.security.impl.SimpleLogger;
 import io.liveoak.security.spi.AuthToken;
-import io.liveoak.security.spi.AuthorizationRequestContext;
-import io.liveoak.security.spi.AuthorizationService;
+import io.liveoak.security.spi.AuthzRequestContext;
+import io.liveoak.security.spi.AuthzService;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.SecurityContext;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,22 +25,22 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Handler for checking authorization of current request. It's independent of protocol. It delegates the work to {@link AuthorizationService}.
+ * Handler for checking authorization of current request. It's independent of protocol. It delegates the work to {@link io.liveoak.security.spi.AuthzService}.
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class AuthorizationHandler extends SimpleChannelInboundHandler<ResourceRequest> {
+public class AuthzHandler extends SimpleChannelInboundHandler<ResourceRequest> {
 
     // TODO: replace with real logging
-    private static final SimpleLogger log = new SimpleLogger(AuthorizationHandler.class);
+    private static final SimpleLogger log = new SimpleLogger(AuthzHandler.class);
 
     // TODO: Should be removed...
     static {
         try {
-            AuthServicesHolder.getInstance().registerClassloader(AuthorizationHandler.class.getClassLoader());
+            AuthServicesHolder.getInstance().registerClassloader(AuthzHandler.class.getClassLoader());
             AuthServicesHolder.getInstance().registerDefaultPolicies();
         } catch (Throwable e) {
-            log.error("Error occured during initialization of AuthorizationService", e);
+            log.error("Error occured during initialization of AuthzService", e);
             throw e;
         }
     }
@@ -52,16 +51,16 @@ public class AuthorizationHandler extends SimpleChannelInboundHandler<ResourceRe
             // TODO Creating AuthToken here is temporary
             AuthToken token = createAuthToken(req.requestContext().securityContext());
 
-            AuthorizationService authService = AuthServicesHolder.getInstance().getAuthorizationService();
+            AuthzService authService = AuthServicesHolder.getInstance().getAuthzService();
             RequestContext reqContext = req.requestContext();
 
-            if (authService.isAuthorized(new AuthorizationRequestContext(token, reqContext))) {
+            if (authService.isAuthorized(new AuthzRequestContext(token, reqContext))) {
                 ctx.fireChannelRead(req);
             } else {
                 sendAuthorizationError(ctx, req);
             }
         } catch (Throwable e) {
-            log.error("Exception occured in AuthorizationService check", e);
+            log.error("Exception occurs in AuthzService check", e);
             throw e;
         }
     }

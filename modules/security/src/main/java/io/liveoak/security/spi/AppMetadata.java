@@ -5,12 +5,10 @@
  */
 package io.liveoak.security.spi;
 
-import java.security.PublicKey;
-
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class ApplicationMetadata {
+public class AppMetadata {
 
     // MBAAS configuration
     private final String applicationId;
@@ -19,7 +17,7 @@ public class ApplicationMetadata {
     private final String realmName;
     private final String applicationName;
 
-    public ApplicationMetadata(String applicationId, String realmName, String applicationName) {
+    public AppMetadata(String applicationId, String realmName, String applicationName) {
         this.applicationId = applicationId;
         this.realmName = realmName;
         this.applicationName = applicationName;
