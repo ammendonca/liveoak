@@ -66,7 +66,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<ResourceRequest> {
                     DefaultSecurityContext sc = (DefaultSecurityContext) requestContext.securityContext();
                     sc.init(realm, subject, Collections.unmodifiableSet(roles), issuedAt);
                 } catch (Throwable t) {
-                    log.error("Catched throwable: " + t.getMessage());
+                    log.error("Not authorized due to throwable: " + t.getMessage());
                     sendError(ctx, req, ResourceErrorResponse.ErrorType.NOT_AUTHORIZED);
                     return;
                 }

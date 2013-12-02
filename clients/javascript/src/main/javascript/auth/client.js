@@ -136,7 +136,7 @@ Keycloak.prototype = {
 
                             inst._callback && inst._callback('authenticated');
 
-                            if (this._loadProfile) {
+                            if (inst._loadProfile) {
                                 var profileUrl = inst._baseUrl + '/account';
                                 var profileReq = new XMLHttpRequest();
                                 profileReq.open('GET', profileUrl, true);
