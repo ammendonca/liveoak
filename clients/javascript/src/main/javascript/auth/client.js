@@ -12,7 +12,7 @@ window._oauth = (function () {
                 oauth.error = p[1];
                 break;
             case 'state':
-                oauth.state = p[1];
+                oauth.state = decodeURIComponent(p[1]);
                 break;
         }
     }
@@ -23,10 +23,10 @@ window._oauth = (function () {
         console.debug('oauth callback');
 
         if (oauth.state && oauth.state.indexOf('#') != -1) {
-            oauth.fragment = window._oauth.state.substr(window._oauth.state.indexOf('#') + 1);
+            oauth.fragment = oauth.state.substr(oauth.state.indexOf('#'));
         }
 
-        window.history.replaceState({}, null, location.protocol + '//' + location.host + location.pathname);
+        window.history.replaceState({}, null, location.protocol + '//' + location.host + location.pathname + (oauth.fragment ? oauth.fragment : ''));
     }
 
     return oauth;
@@ -176,9 +176,9 @@ Keycloak.prototype = {
 
     _createLoginUrl: function (prompt) {
         var state = this._createUUID();
-//        if (location.hash) {
-//            state += '#' + location.hash;
-//        }
+        if (location.hash) {
+            state += location.hash;
+        }
         sessionStorage.state = state;
         var url = this._baseUrl
             + '/tokens/login'
