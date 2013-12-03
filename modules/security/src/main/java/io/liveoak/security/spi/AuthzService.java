@@ -5,6 +5,9 @@
  */
 package io.liveoak.security.spi;
 
+import io.liveoak.security.integration.AuthzServiceRootResource;
+import io.liveoak.spi.RequestContext;
+
 /**
  * Service providing authorization
  *
@@ -13,10 +16,18 @@ package io.liveoak.security.spi;
 public interface AuthzService {
 
     /**
-     * Decide if request is authorized or not
+     * initialize service
      *
-     * @param authRequestContext encapsulates all info about current request, token etc
+     * @param rootResource
+     */
+    void initialize(AuthzServiceRootResource rootResource);
+
+    /**
+     * Decide if request is authorized or not. Assumption is that request has been already authenticated and securityContext is
+     * already established
+     *
+     * @param requestContext encapsulates all info about current request.
      * @return true if request is authorized
      */
-    boolean isAuthorized(AuthzRequestContext authRequestContext);
+    boolean isAuthorized(RequestContext requestContext);
 }

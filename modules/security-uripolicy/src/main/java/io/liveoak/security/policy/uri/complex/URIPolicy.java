@@ -5,11 +5,9 @@
  */
 package io.liveoak.security.policy.uri.complex;
 
-import io.liveoak.security.impl.SimpleLogger;
-import io.liveoak.security.spi.AuthToken;
+import io.liveoak.container.auth.SimpleLogger;
 import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.security.spi.AuthzPolicy;
-import io.liveoak.security.spi.AuthzRequestContext;
 import io.liveoak.spi.RequestContext;
 import org.drools.RuleBase;
 import org.drools.RuleBaseConfiguration;
@@ -89,13 +87,11 @@ public class URIPolicy implements AuthzPolicy {
 
 
     @Override
-    public AuthzDecision isAuthorized(AuthzRequestContext authRequestContext) {
+    public AuthzDecision isAuthorized(RequestContext reqContext) {
         checkInitializationCompleted();
 
-        RequestContext reqContext = authRequestContext.getRequestContext();
-        AuthToken token = authRequestContext.getAuthToken();
         if (log.isTraceEnabled()) {
-            log.debug("Start checking request: " + reqContext + ", token: " + token);
+            log.trace("Start checking request: " + reqContext);
         }
 
         WorkingMemory workingMemory = null;
@@ -112,10 +108,10 @@ public class URIPolicy implements AuthzPolicy {
             URIMatcherCache cache = new URIMatcherCache();
             workingMemory.insert(cache);
 
-            // TODO: Verify if it's better to first insert request or token (Rules checking is triggered right after inserting, so it could affect performance)
+            // TODO: Verify if it's better to first insert request or securityContext (Rules checking is triggered right after inserting, so it could affect performance)
             RequestContextDecorator reqContextDecorator = new RequestContextDecorator(reqContext);
             workingMemory.insert(reqContextDecorator);
-            workingMemory.insert(token);
+            workingMemory.insert(reqContextDecorator.securityContext());
 
             // Uncomment for drools debugging (TODO: should be somehow configurable...)
             //workingMemory.addEventListener(new DebugAgendaEventListener());

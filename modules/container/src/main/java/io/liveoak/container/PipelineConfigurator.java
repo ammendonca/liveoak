@@ -99,7 +99,7 @@ public class PipelineConfigurator {
         pipeline.addLast("http-resourceRead-decoder", new HttpResourceRequestDecoder(this.container.getCodecManager()));
         pipeline.addLast("http-resourceRead-encoder", new HttpResourceResponseEncoder(this.container.getCodecManager()));
         pipeline.addLast("auth-handler", new AuthHandler(this.container.directConnector()));
-        pipeline.addLast("authz-handler", new AuthzHandler());
+        pipeline.addLast("authz-handler", new AuthzHandler(this.container.directConnector()));
         //pipeline.addLast( new DebugHandler( "server-2" ) );
         pipeline.addLast("subscription-watcher", new SubscriptionWatcher(this.container.getSubscriptionManager()));
         pipeline.addLast("object-handler", new ResourceHandler(this.container));

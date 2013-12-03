@@ -5,7 +5,7 @@
  */
 package io.liveoak.security.policy.uri.complex;
 
-import io.liveoak.security.impl.SimpleLogger;
+import io.liveoak.container.auth.SimpleLogger;
 import io.liveoak.security.spi.AuthzDecision;
 
 import java.util.HashSet;

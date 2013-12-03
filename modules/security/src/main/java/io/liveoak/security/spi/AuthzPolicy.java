@@ -5,6 +5,8 @@
  */
 package io.liveoak.security.spi;
 
+import io.liveoak.spi.RequestContext;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -18,8 +20,8 @@ public interface AuthzPolicy {
     /**
      * Decide if request is authorized, not authorized or if we don't know
      *
-     * @param authRequestContext encapsulates all info about current request, token etc
+     * @param requestContext encapsulates all info about current request, token etc
      * @return true if request is authorized
      */
-    AuthzDecision isAuthorized(AuthzRequestContext authRequestContext);
+    AuthzDecision isAuthorized(RequestContext requestContext);
 }

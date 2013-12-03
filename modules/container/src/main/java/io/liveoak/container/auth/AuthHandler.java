@@ -5,21 +5,16 @@
  */
 package io.liveoak.container.auth;
 
-import io.liveoak.container.DefaultRequestContext;
 import io.liveoak.container.DefaultSecurityContext;
 import io.liveoak.container.DirectConnector;
 import io.liveoak.container.ResourceErrorResponse;
 import io.liveoak.container.ResourceRequest;
-import io.liveoak.security.impl.SimpleLogger;
 import io.liveoak.spi.RequestContext;
-import io.liveoak.spi.ResourceException;
-import io.liveoak.spi.SecurityContext;
 import io.liveoak.spi.state.ResourceState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpHeaders;
 
-import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;

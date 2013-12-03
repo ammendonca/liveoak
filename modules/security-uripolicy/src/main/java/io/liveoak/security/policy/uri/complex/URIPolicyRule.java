@@ -19,31 +19,26 @@ public class URIPolicyRule {
     private final String queryParamsCondition;
     private final String requestType;
 
-    private final String allowedRealmRoles;
-    private final String deniedRealmRoles;
-    private final String allowedApplicationRoles;
-    private final String deniedApplicationRoles;
+    private final String allowedRoles;
+    private final String deniedRoles;
     private final String allowedUsers;
     private final String deniedUsers;
 
-    private URIPolicyRule(int priority, String uriPattern, String queryParamsCondition, String requestType, String allowedRealmRoles, String deniedRealmRoles,
-                          String allowedApplicationRoles, String deniedApplicationRoles, String allowedUsers, String deniedUsers) {
+    private URIPolicyRule(int priority, String uriPattern, String queryParamsCondition, String requestType, String allowedRoles, String deniedRoles,
+                          String allowedUsers, String deniedUsers) {
         this.priority = priority;
         this.uriPattern = uriPattern;
         this.queryParamsCondition = queryParamsCondition;
         this.requestType = requestType;
 
-        this.allowedRealmRoles = allowedRealmRoles;
-        this.allowedApplicationRoles = allowedApplicationRoles;
+        this.allowedRoles = allowedRoles;
         this.allowedUsers = allowedUsers;
-        this.deniedRealmRoles = deniedRealmRoles;
-        this.deniedApplicationRoles = deniedApplicationRoles;
+        this.deniedRoles = deniedRoles;
         this.deniedUsers = deniedUsers;
     }
 
     public static URIPolicyRule createEntry(int priority, String uriPattern, String queryParamsCondition, String requestType,
-                                             String allowedRealmRoles, String deniedRealmRoles,
-                                             String allowedApplicationRoles, String deniedApplicationRoles, String allowedUsers, String deniedUsers) {
+                                             String allowedRoles, String deniedRoles, String allowedUsers, String deniedUsers) {
 
         // From uriPattern from "user-friendly" form to "drools-friendly" form
         String formattedPattern = DroolsFormattingUtils.formatStringToDrools(uriPattern);
@@ -59,8 +54,8 @@ public class URIPolicyRule {
         // RequestType must be wildcard or some of RequestType enums
         requestType = validateAndFormatRequestType(requestType);
 
-        return new URIPolicyRule(priority, formattedPattern, queryParamsCondition, requestType,
-                allowedRealmRoles, deniedRealmRoles, allowedApplicationRoles, deniedApplicationRoles, allowedUsers, deniedUsers);
+        return new URIPolicyRule(priority, formattedPattern, queryParamsCondition, requestType, allowedRoles, deniedRoles,
+                allowedUsers, deniedUsers);
     }
 
     public int getPriority() {
@@ -79,20 +74,12 @@ public class URIPolicyRule {
         return requestType;
     }
 
-    public String getAllowedRealmRoles() {
-        return allowedRealmRoles;
+    public String getAllowedRoles() {
+        return allowedRoles;
     }
 
-    public String getDeniedRealmRoles() {
-        return deniedRealmRoles;
-    }
-
-    public String getAllowedApplicationRoles() {
-        return allowedApplicationRoles;
-    }
-
-    public String getDeniedApplicationRoles() {
-        return deniedApplicationRoles;
+    public String getDeniedRoles() {
+        return deniedRoles;
     }
 
     public String getAllowedUsers() {

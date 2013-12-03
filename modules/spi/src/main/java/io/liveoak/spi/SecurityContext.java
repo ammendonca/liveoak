@@ -5,7 +5,6 @@
  */
 package io.liveoak.spi;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**

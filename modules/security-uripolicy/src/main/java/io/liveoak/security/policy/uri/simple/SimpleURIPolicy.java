@@ -6,14 +6,11 @@
 package io.liveoak.security.policy.uri.simple;
 
 
-import io.liveoak.security.impl.AuthServicesHolder;
 import io.liveoak.security.policy.uri.RolesContainer;
 import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.security.spi.AuthzPolicy;
-import io.liveoak.security.spi.AuthzRequestContext;
 import io.liveoak.spi.RequestContext;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -33,24 +30,15 @@ public class SimpleURIPolicy implements AuthzPolicy {
     public static final RolesContainer ALLOW_ALL_ROLES_CONTAINER = new RolesContainer() {
 
         @Override
-        public AuthzDecision isRealmRoleAllowed(String roleName) {
+        public AuthzDecision isRoleAllowed(String roleName) {
             return AuthzDecision.ACCEPT;
         }
 
         @Override
-        public AuthzDecision isApplicationRoleAllowed(String roleName) {
+        public AuthzDecision isUserAllowed(String username) {
             return AuthzDecision.ACCEPT;
         }
 
-        @Override
-        public AuthzDecision isRealmRolesAllowed(Collection<String> roles) {
-            return AuthzDecision.ACCEPT;
-        }
-
-        @Override
-        public AuthzDecision isApplicationRolesAllowed(Collection<String> roles) {
-            return AuthzDecision.ACCEPT;
-        }
     };
 
     private RecursiveHashMap permissions = new RecursiveHashMap(null);
@@ -62,8 +50,7 @@ public class SimpleURIPolicy implements AuthzPolicy {
     }
 
     @Override
-    public AuthzDecision isAuthorized(AuthzRequestContext authRequestContext) {
-        RequestContext req = authRequestContext.getRequestContext();
+    public AuthzDecision isAuthorized(RequestContext req) {
         List<String> segments = req.resourcePath().segments();
         int segmentsSize = segments.size();
 
@@ -85,11 +72,7 @@ public class SimpleURIPolicy implements AuthzPolicy {
         // Look for best RolesContainer
         RolesContainer rolesContainer = permissions.recursiveGet(keys);
 
-        // Find applicationName from persister, so we can obtain applicationRoles for correct application from token
-        String appId = AuthServicesHolder.getInstance().getApplicationIdResolver().resolveAppId(req);
-        String appName = AuthServicesHolder.getInstance().getAuthPersister().getApplicationMetadata(appId).getApplicationName();
-
-        AuthzDecision authDecision = checkPermissions(rolesContainer, authRequestContext, appName);
+        AuthzDecision authDecision = checkPermissions(rolesContainer, req);
         return authDecision;
     }
 
@@ -102,31 +85,15 @@ public class SimpleURIPolicy implements AuthzPolicy {
         permissions.recursivePut(keys, policy);
     }
 
-    protected AuthzDecision checkPermissions(RolesContainer rolesContainer, AuthzRequestContext authRequestContext, String applicationName) {
+    protected AuthzDecision checkPermissions(RolesContainer rolesContainer, RequestContext reqCtx) {
+        Set<String> roles = getRoles(reqCtx);
 
-        Set<String> realmRoles = getRealmRoles(authRequestContext);
-        Set<String> appRoles = getAppRoles(authRequestContext, applicationName);
+        AuthzDecision rolesAuthDecision = rolesContainer.isRolesAllowed(roles);
 
-        AuthzDecision realmRolesAuthDecision = rolesContainer.isRealmRolesAllowed(realmRoles);
-        AuthzDecision appRolesDecision = rolesContainer.isApplicationRolesAllowed(appRoles);
-
-        return realmRolesAuthDecision.mergeDecision(appRolesDecision);
+        return rolesAuthDecision;
     }
 
-    private Set<String> getRealmRoles(AuthzRequestContext authRequestContext) {
-        return authRequestContext.getAuthToken().getRealmRoles();
-    }
-
-    private Set<String> getAppRoles(AuthzRequestContext authRequestContext, String appName) {
-        if (!authRequestContext.isRequestAuthenticated()) {
-            return Collections.emptySet();
-        }
-
-        Map<String, Set<String>> appAccess = authRequestContext.getAuthToken().getApplicationRolesMap();
-        if (appAccess.containsKey(appName)) {
-            return appAccess.get(appName);
-        } else {
-            return Collections.EMPTY_SET;
-        }
+    private Set<String> getRoles(RequestContext reqCtx) {
+        return reqCtx.securityContext().getRoles();
     }
 }

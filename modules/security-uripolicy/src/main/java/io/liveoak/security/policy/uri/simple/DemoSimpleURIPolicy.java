@@ -22,18 +22,18 @@ public class DemoSimpleURIPolicy extends SimpleURIPolicy {
 
         // Collection protected1 is available for READ for role "users"
         addRolePolicy("authTest", "protected1", "*", RequestType.READ.name(),
-                new RolesContainer().addAllowedApplicationRole("user"));
+                new RolesContainer().addAllowedRole("user"));
 
         // Collection protected1 is available for other actions than READ for role "admins" (READ specified by previous rule)
         addRolePolicy("authTest", "protected1", "*", "*",
-                new RolesContainer().addAllowedApplicationRole("admin"));
+                new RolesContainer().addAllowedRole("admin"));
 
         // Resource "12345" in collection "protected1" is available for "users" and "powerUsers" for all requestTypes (readMember+write)
         addRolePolicy("authTest", "protected1", "12345", "*",
-                new RolesContainer().addAllowedApplicationRole("user").addAllowedApplicationRole("powerUser"));
+                new RolesContainer().addAllowedRole("user").addAllowedRole("powerUser"));
 
         // Collection protected2 is available for CREATE for realm role "users"
         addRolePolicy("authTest", "protected2", "*", RequestType.CREATE.name(),
-                new RolesContainer().addAllowedRealmRole("user"));
+                new RolesContainer().addAllowedRole("user"));
     }
 }

@@ -5,11 +5,6 @@
  */
 package io.liveoak.security.policy.uri;
 
-import io.liveoak.security.impl.AuthConstants;
-import io.liveoak.security.impl.AuthServicesHolder;
-import io.liveoak.security.impl.DefaultAuthToken;
-import io.liveoak.security.spi.AuthToken;
-import io.liveoak.security.spi.AuthzRequestContext;
 import io.liveoak.security.spi.AuthzService;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.RequestType;
@@ -27,11 +22,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * TODO: Should be tested with integration tests
+ *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class AuthorizationServiceTest {
 
-    private static AuthzService service;
+    /*private static AuthzService service;
 
     @BeforeClass
     public static void initAuthorizationService() {
@@ -124,7 +121,7 @@ public class AuthorizationServiceTest {
 
         Set<String> realmRolesSet = arrayToSet(realmRoles);
         Map<String, Set<String>> appRolesMap = new HashMap<>();
-        appRolesMap.put(AuthConstants.DEFAULT_APPLICATION_NAME, arrayToSet(appRoles));
+        appRolesMap.put(AuthzConstants.DEFAULT_APPLICATION_NAME, arrayToSet(appRoles));
 
         AuthToken authToken = new DefaultAuthToken(null, null, null, 0, 0, 0, null, realmRolesSet, appRolesMap);
         return new AuthzRequestContext(authToken, reqContext);
@@ -136,5 +133,5 @@ public class AuthorizationServiceTest {
             set.add(item);
         }
         return set;
-    }
+    }   */
 }

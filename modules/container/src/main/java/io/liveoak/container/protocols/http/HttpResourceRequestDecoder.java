@@ -11,7 +11,6 @@ import io.liveoak.container.ReturnFieldsImpl;
 import io.liveoak.container.codec.MediaTypeMatcher;
 import io.liveoak.container.codec.ResourceCodecManager;
 import io.liveoak.container.codec.UnsupportedMediaTypeException;
-import io.liveoak.security.impl.AuthConstants;
 import io.liveoak.spi.MediaType;
 import io.liveoak.spi.Pagination;
 import io.liveoak.spi.RequestType;

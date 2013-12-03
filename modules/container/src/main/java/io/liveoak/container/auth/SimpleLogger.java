@@ -3,7 +3,7 @@
  *
  * Licensed under the Eclipse Public License version 1.0, available at http://www.eclipse.org/legal/epl-v10.html
  */
-package io.liveoak.security.impl;
+package io.liveoak.container.auth;
 
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;

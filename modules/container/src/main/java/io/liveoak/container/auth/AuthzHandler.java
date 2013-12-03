@@ -5,27 +5,19 @@
  */
 package io.liveoak.container.auth;
 
+import io.liveoak.container.DefaultRequestAttributes;
+import io.liveoak.container.DirectConnector;
 import io.liveoak.container.ResourceErrorResponse;
 import io.liveoak.container.ResourceRequest;
-import io.liveoak.security.impl.AuthServicesHolder;
-import io.liveoak.security.impl.DefaultAuthToken;
-import io.liveoak.security.impl.SimpleLogger;
-import io.liveoak.security.spi.AuthToken;
-import io.liveoak.security.spi.AuthzRequestContext;
-import io.liveoak.security.spi.AuthzService;
+import io.liveoak.spi.RequestAttributes;
 import io.liveoak.spi.RequestContext;
-import io.liveoak.spi.SecurityContext;
+import io.liveoak.spi.state.ResourceState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
- * Handler for checking authorization of current request. It's independent of protocol. It delegates the work to {@link io.liveoak.security.spi.AuthzService}.
+ * Handler for checking authorization of current request. It's independent of protocol.
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -34,64 +26,40 @@ public class AuthzHandler extends SimpleChannelInboundHandler<ResourceRequest> {
     // TODO: replace with real logging
     private static final SimpleLogger log = new SimpleLogger(AuthzHandler.class);
 
-    // TODO: Should be removed...
-    static {
-        try {
-            AuthServicesHolder.getInstance().registerClassloader(AuthzHandler.class.getClassLoader());
-            AuthServicesHolder.getInstance().registerDefaultPolicies();
-        } catch (Throwable e) {
-            log.error("Error occured during initialization of AuthzService", e);
-            throw e;
-        }
+    private final DirectConnector connector;
+
+    public AuthzHandler(DirectConnector connector) {
+        this.connector = connector;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ResourceRequest req) throws Exception {
         try {
-            // TODO Creating AuthToken here is temporary
-            AuthToken token = createAuthToken(req.requestContext().securityContext());
+            // Put current request as attribute of the request, which will be sent to AuthzService
+            RequestAttributes attribs = new DefaultRequestAttributes();
+            attribs.setAttribute(AuthzConstants.ATTR_REQUEST_CONTEXT, req.requestContext());
+            RequestContext authzRequest = new RequestContext.Builder().requestAttributes(attribs).build();
 
-            AuthzService authService = AuthServicesHolder.getInstance().getAuthzService();
-            RequestContext reqContext = req.requestContext();
+            ResourceState resourceState = this.connector.read(authzRequest, "/authz/authzCheck");
+            Boolean result = (Boolean)resourceState.getProperty(AuthzConstants.ATTR_AUTHZ_RESULT);
 
-            if (authService.isAuthorized(new AuthzRequestContext(token, reqContext))) {
+            if (result) {
                 ctx.fireChannelRead(req);
             } else {
-                sendAuthorizationError(ctx, req);
+                sendError(ctx, req);
             }
         } catch (Throwable e) {
-            log.error("Exception occurs in AuthzService check", e);
-            throw e;
+            log.error("Exception catched in AuthzHandler", e);
+            sendError(ctx, req);
         }
     }
 
-    private AuthToken createAuthToken(SecurityContext sc) {
-        if (sc.isAuthenticated()) {
-            Set<String> realmRoles = new HashSet<>();
-            Map<String, Set<String>> appRoles = new HashMap<>();
+    protected void sendError(ChannelHandlerContext ctx, ResourceRequest req) {
+        // Send 403 if request is authenticated or 401 if it is not
+        boolean isAuthenticated = req.requestContext().securityContext().isAuthenticated();
+        ResourceErrorResponse.ErrorType errorType = isAuthenticated ? ResourceErrorResponse.ErrorType.FORBIDDEN : ResourceErrorResponse.ErrorType.NOT_AUTHORIZED;
 
-            for (String role : sc.getRoles()) {
-                int i = role.indexOf('/');
-                if (i == -1) {
-                    realmRoles.add(role);
-                } else {
-                    String a = role.substring(0, i);
-                    String r = role.substring(i + 1);
-                    if (!appRoles.containsKey(a)) {
-                        appRoles.put(a, new HashSet<>());
-                    }
-                    appRoles.get(a).add(r);
-                }
-            }
-
-            return new DefaultAuthToken(sc.getSubject(), sc.getRealm(), "app", -1, -1, sc.lastVerified(), null, realmRoles, appRoles);
-        } else {
-            return new DefaultAuthToken(null, null, null, -1, -1, 01, null, Collections.emptySet(), Collections.emptyMap());
-        }
-    }
-
-    protected void sendAuthorizationError(ChannelHandlerContext ctx, ResourceRequest req) {
-        ctx.writeAndFlush(new ResourceErrorResponse(req, ResourceErrorResponse.ErrorType.NOT_AUTHORIZED));
+        ctx.writeAndFlush(new ResourceErrorResponse(req, errorType));
     }
 
     @Override

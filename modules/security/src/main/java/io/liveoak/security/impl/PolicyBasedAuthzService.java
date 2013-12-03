@@ -5,47 +5,63 @@
  */
 package io.liveoak.security.impl;
 
+import io.liveoak.container.DefaultRequestAttributes;
+import io.liveoak.container.DirectConnector;
+import io.liveoak.container.auth.AuthzConstants;
+import io.liveoak.container.auth.SimpleLogger;
+import io.liveoak.security.integration.AuthzServiceRootResource;
 import io.liveoak.security.spi.AuthzDecision;
-import io.liveoak.security.spi.AuthzPolicy;
+import io.liveoak.security.spi.AuthzPersister;
 import io.liveoak.security.spi.AuthzPolicyEntry;
-import io.liveoak.security.spi.AuthzRequestContext;
 import io.liveoak.security.spi.AuthzService;
+import io.liveoak.spi.RequestAttributes;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.ResourcePath;
+import io.liveoak.spi.state.ResourceState;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class PolicyBasedAuthzService implements AuthzService {
 
-    SimpleLogger log = new SimpleLogger(PolicyBasedAuthzService.class);
+    private static final SimpleLogger log = new SimpleLogger(PolicyBasedAuthzService.class);
+
+    private AuthzPersister authzPersister;
+    private DirectConnector directConnector;
 
     @Override
-    public boolean isAuthorized(AuthzRequestContext authRequestContext) {
+    public void initialize(AuthzServiceRootResource authzServiceRootResource) {
+        this.authzPersister = authzServiceRootResource.getAuthzPersister();
+        this.directConnector = authzServiceRootResource.getContainer().directConnector();
+    }
+
+
+    @Override
+    public boolean isAuthorized(RequestContext reqContext) {
         boolean someSuccess = false;
-        RequestContext request = authRequestContext.getRequestContext();
 
         // Find all policies for particular application
-        String appId = AuthServicesHolder.getInstance().getApplicationIdResolver().resolveAppId(request);
-        List<AuthzPolicyEntry> policies = AuthServicesHolder.getInstance().getAuthPersister().getRegisteredPolicies(appId);
+        Collection<AuthzPolicyEntry> policies = this.authzPersister.getRegisteredAuthzPolicies();
 
         if (policies.size() == 0) {
-            throw new IllegalStateException("No policies configured for application " + appId);
+            throw new IllegalStateException("No policies configured");
         }
 
         for (AuthzPolicyEntry policyEntry : policies) {
-            ResourcePath resPath = request.resourcePath();
+            ResourcePath resPath = reqContext.resourcePath();
 
             // Check if policy is mapped to actual resourcePath
             if (policyEntry.isResourceMapped(resPath)) {
-                AuthzPolicy policy = policyEntry.getAuthzPolicy();
+                String policyEndpoint = policyEntry.getPolicyResourceEndpoint();
 
                 if (log.isTraceEnabled()) {
-                    log.trace("Going to trigger policy for request: " + request + ", policyEntry: " + policyEntry);
+                    log.trace("Going to trigger policyName " + policyEntry.getPolicyName() + " for request: " + reqContext);
                 }
-                AuthzDecision decision = policy.isAuthorized(authRequestContext);
+
+                // TODO: This should be triggered concurrently with usage of future objects
+                AuthzDecision decision = invokePolicyEndpoint(reqContext, policyEndpoint);
                 if (log.isTraceEnabled()) {
                     log.trace("Result of authorization policy check: " + decision);
                 }
@@ -60,5 +76,25 @@ public class PolicyBasedAuthzService implements AuthzService {
         }
 
         return someSuccess;
+    }
+
+    protected AuthzDecision invokePolicyEndpoint(RequestContext reqContext, String policyEndpoint) {
+        // Put current request as attribute of the authzRequest
+        RequestAttributes attribs = new DefaultRequestAttributes();
+        attribs.setAttribute(AuthzConstants.ATTR_REQUEST_CONTEXT, reqContext);
+        RequestContext authzRequest = new RequestContext.Builder().requestAttributes(attribs).build();
+
+        try {
+            ResourceState resourceState = this.directConnector.read(authzRequest, policyEndpoint);
+            Object result = resourceState.getProperty(AuthzConstants.ATTR_AUTHZ_POLICY_RESULT);
+            return (AuthzDecision)result;
+        } catch (InterruptedException ie) {
+            log.error("Interrupted", ie);
+            Thread.currentThread().interrupt();
+            return AuthzDecision.REJECT;
+        } catch (Exception e) {
+            log.error("Couldn't invoke policyEndpoint " + policyEndpoint + " due to exception", e);
+            return AuthzDecision.REJECT;
+        }
     }
 }

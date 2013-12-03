@@ -60,5 +60,15 @@ resources: {
         config: {
             import: '${user.dir}/keycloak-config.json'
         }
+    },
+
+    authz: {
+        type: 'jboss-module',
+        module-id: 'io.liveoak.security',
+        class-name: 'io.liveoak.security.integration.AuthzServiceRootResource',
+        config: {
+            service-class-name: 'io.liveoak.security.impl.PolicyBasedAuthzService',
+            authz-config: '${user.dir}/authz-config.json'
+        }
     }
 }}

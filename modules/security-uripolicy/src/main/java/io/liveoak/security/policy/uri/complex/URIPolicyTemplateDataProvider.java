@@ -42,10 +42,8 @@ public class URIPolicyTemplateDataProvider implements DataProvider {
                 uriPolicyRule.getUriPattern(),
                 uriPolicyRule.getQueryParamsCondition(),
                 uriPolicyRule.getRequestType(),
-                uriPolicyRule.getAllowedRealmRoles(),
-                uriPolicyRule.getDeniedRealmRoles(),
-                uriPolicyRule.getAllowedApplicationRoles(),
-                uriPolicyRule.getDeniedApplicationRoles(),
+                uriPolicyRule.getAllowedRoles(),
+                uriPolicyRule.getDeniedRoles(),
                 uriPolicyRule.getAllowedUsers(),
                 uriPolicyRule.getDeniedUsers()
         };
