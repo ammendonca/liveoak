@@ -15,6 +15,10 @@ public class AuthzServiceConfig {
 
     private List<AuthzPolicyEntry> policies;
 
+    public void setPolicies(List<AuthzPolicyEntry> policies) {
+        this.policies = policies;
+    }
+
     public List<AuthzPolicyEntry> getPolicies() {
         return policies;
     }

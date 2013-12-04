@@ -8,7 +8,6 @@ package io.liveoak.security.spi;
 
 import io.liveoak.spi.ResourcePath;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,16 +24,32 @@ public class AuthzPolicyEntry {
         return policyName;
     }
 
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
+    }
+
     public List<String> getIncludedResourcePrefixes() {
-        return Collections.unmodifiableList(includedResourcePrefixes);
+        return includedResourcePrefixes;
+    }
+
+    public void setIncludedResourcePrefixes(List<String> includedResourcePrefixes) {
+        this.includedResourcePrefixes = includedResourcePrefixes;
     }
 
     public List<String> getExcludedResourcePrefixes() {
-        return Collections.unmodifiableList(excludedResourcePrefixes);
+        return excludedResourcePrefixes;
+    }
+
+    public void setExcludedResourcePrefixes(List<String> excludedResourcePrefixes) {
+        this.excludedResourcePrefixes = excludedResourcePrefixes;
     }
 
     public String getPolicyResourceEndpoint() {
         return policyResourceEndpoint;
+    }
+
+    public void setPolicyResourceEndpoint(String policyResourceEndpoint) {
+        this.policyResourceEndpoint = policyResourceEndpoint;
     }
 
     @Override
@@ -57,16 +72,25 @@ public class AuthzPolicyEntry {
     public boolean isResourceMapped(ResourcePath resourcePath) {
         String resPathString = resourcePath.toString();
 
+        // ResourcePath of root resource is not "/" but ""
+        if (resPathString.isEmpty()) {
+            resPathString = "/";
+        }
+
         // Check excluded first
-        for (String current : excludedResourcePrefixes) {
-            if (resPathString.startsWith(current)) {
-                return false;
+        if (excludedResourcePrefixes != null) {
+            for (String current : excludedResourcePrefixes) {
+                if (resPathString.startsWith(current)) {
+                    return false;
+                }
             }
         }
 
-        for (String current : includedResourcePrefixes) {
-            if (resPathString.startsWith(current.toString())) {
-                return true;
+        if (includedResourcePrefixes != null) {
+            for (String current : includedResourcePrefixes) {
+                if (resPathString.startsWith(current.toString())) {
+                    return true;
+                }
             }
         }
 

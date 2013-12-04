@@ -5,6 +5,8 @@
  */
 package io.liveoak.security.impl;
 
+import java.util.Arrays;
+
 import io.liveoak.security.spi.AuthzPolicyEntry;
 import io.liveoak.spi.ResourcePath;
 import org.junit.Assert;
@@ -17,22 +19,25 @@ public class AuthzPolicyEntryTest {
 
     @Test
     public void testPath1() {
-        AuthzPolicyEntry entry1 = new AuthzPolicyEntry(null, null);
-        entry1.addIncludedResourcePrefix("/").addIncludedResourcePrefix("/foo").addExcludedResourcePrefix("/foo/bar");
+        AuthzPolicyEntry entry1 = new AuthzPolicyEntry();
+        entry1.setIncludedResourcePrefixes(Arrays.asList(new String[] { "/", "/foo" }));
+        entry1.setExcludedResourcePrefixes(Arrays.asList(new String[] { "/foo/bar" }));
 
-        AuthzPolicyEntry entry2 = new AuthzPolicyEntry(null, null);
-        entry2.addIncludedResourcePrefix("/foo");
+        AuthzPolicyEntry entry2 = new AuthzPolicyEntry();
+        entry2.setIncludedResourcePrefixes(Arrays.asList(new String[] { "/foo" }));
 
-        AuthzPolicyEntry entry3 = new AuthzPolicyEntry(null, null);
-        entry3.addIncludedResourcePrefix("/foo/bar").addIncludedResourcePrefix("/foo/baz");
+        AuthzPolicyEntry entry3 = new AuthzPolicyEntry();
+        entry3.setIncludedResourcePrefixes(Arrays.asList(new String[] { "/foo/bar", "/foo/baz" }));
 
-        AuthzPolicyEntry entry4 = new AuthzPolicyEntry(null, null);
-        entry4.addIncludedResourcePrefix("/").addExcludedResourcePrefix("/foo");
+        AuthzPolicyEntry entry4 = new AuthzPolicyEntry();
+        entry4.setIncludedResourcePrefixes(Arrays.asList(new String[] { "/" }));
+        entry4.setExcludedResourcePrefixes(Arrays.asList(new String[] { "/foo" }));
 
-        AuthzPolicyEntry entry5 = new AuthzPolicyEntry(null, null);
-        entry5.addIncludedResourcePrefix("/").addExcludedResourcePrefix("/foo/bar").addExcludedResourcePrefix("/foo/baz");
+        AuthzPolicyEntry entry5 = new AuthzPolicyEntry();
+        entry5.setIncludedResourcePrefixes(Arrays.asList(new String[] { "/" }));
+        entry5.setExcludedResourcePrefixes(Arrays.asList(new String[] { "/foo/bar", "/foo/baz" }));
 
-        AuthzPolicyEntry entry6 = new AuthzPolicyEntry(null, null);
+        AuthzPolicyEntry entry6 = new AuthzPolicyEntry();
 
         ResourcePath path1 = new ResourcePath("/");
         Assert.assertTrue(entry1.isResourceMapped(path1));

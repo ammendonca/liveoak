@@ -2,6 +2,7 @@ package io.liveoak.security.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,16 +69,19 @@ public class AuthzServiceRootResource implements RootResource {
         log.info("Services initialized. id=" + this.id + ", authzService=" + this.authzService + ", authzPersister=" + this.authzPersister);
 
         String authorizationConfig = context.config().get("authz-config", null);
-        if (authorizationConfig != null) {
-            AuthzServiceConfig authzServiceConfig = readPoliciesConfiguration(context, authorizationConfig);
-            log.info("Read policies config: " + authzServiceConfig);
+        AuthzServiceConfig authzServiceConfig = null;
 
-            for (AuthzPolicyEntry configEntry : authzServiceConfig.getPolicies()) {
-                authzPersister.registerAuthzPolicy(configEntry);
-            }
+        if (authorizationConfig != null) {
+            authzServiceConfig = readPoliciesConfiguration(context, authorizationConfig);
         } else {
-            log.info("Authorization config is null. Will use the default one");
-            // TODO:
+            log.info("authz-config is null. Will use the default one");
+            authzServiceConfig = createDefaultConfig();
+        }
+
+        log.info("AuthzService config: " + authzServiceConfig);
+
+        for (AuthzPolicyEntry configEntry : authzServiceConfig.getPolicies()) {
+            authzPersister.registerAuthzPolicy(configEntry);
         }
 
         registerChildrenResources();
@@ -106,7 +110,8 @@ public class AuthzServiceRootResource implements RootResource {
     protected AuthzServiceConfig readPoliciesConfiguration(ResourceContext context, String fileLocation) throws InitializationException {
         File configFile = new File(fileLocation);
         if (!configFile.exists()) {
-            throw new InitializationException("AuthzService config file on location: " + fileLocation + " doesn't exists");
+            log.info("AuthzService config file on location: " + fileLocation + " doesn't exist. Will use default config");
+            return createDefaultConfig();
         }
 
         try {
@@ -114,6 +119,18 @@ public class AuthzServiceRootResource implements RootResource {
         } catch (IOException ioe) {
             throw new InitializationException("Exception during parsing file: " + configFile, ioe);
         }
+    }
+
+    // Send everything to URIPolicy by default
+    protected AuthzServiceConfig createDefaultConfig() {
+        AuthzPolicyEntry defaultEntry = new AuthzPolicyEntry();
+        defaultEntry.setPolicyName("URIPolicy");
+        defaultEntry.setIncludedResourcePrefixes(Arrays.asList(new String[] { "/" }));
+        defaultEntry.setPolicyResourceEndpoint("/uriPolicy/authzCheck");
+
+        AuthzServiceConfig config = new AuthzServiceConfig();
+        config.setPolicies(Arrays.asList(new AuthzPolicyEntry[] { defaultEntry }));
+        return config;
     }
 
     protected void registerChildrenResources() {

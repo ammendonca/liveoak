@@ -36,9 +36,6 @@ public class URIPolicy implements AuthzPolicy {
     // TODO: Replace with real logging
     private static final SimpleLogger log = new SimpleLogger(URIPolicy.class);
 
-    // Logger to be used inside drools processing
-    private static final SimpleLogger droolsLog = new SimpleLogger("DROOLS");
-
     private RuleBase ruleBase;
 
     private final Executor executor = Executors.newSingleThreadExecutor();
