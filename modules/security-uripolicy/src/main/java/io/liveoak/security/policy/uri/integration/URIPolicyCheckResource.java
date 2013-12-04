@@ -43,17 +43,22 @@ public class URIPolicyCheckResource implements Resource {
     public void readProperties(RequestContext ctx, PropertySink sink) throws Exception {
         AuthzPolicy uriPolicy = parent.getUriPolicy();
 
-        RequestContext reqCtxToAuthorize = ctx.requestAttributes().getAttribute(AuthzConstants.ATTR_REQUEST_CONTEXT, RequestContext.class);
-        AuthzDecision result = uriPolicy.isAuthorized(reqCtxToAuthorize);
+        RequestContext reqCtxToAuthorize = ctx.requestAttributes()!= null ? ctx.requestAttributes().getAttribute(AuthzConstants.ATTR_REQUEST_CONTEXT, RequestContext.class) : null;
+        if (reqCtxToAuthorize == null) {
+            log.warn("requestContext to authorize is null!");
+            sink.accept("error", "requestContext is null");
+        } else {
+            AuthzDecision result = uriPolicy.isAuthorized(reqCtxToAuthorize);
 
-        // Use default value based on uriPolicyConfig
-        if (result == null) {
-            result = Enum.valueOf(AuthzDecision.class, parent.getUriPolicyConfig().getDefaultDecision());
-            if (log.isTraceEnabled()) {
-                log.trace("No rule matched. Will use default decision: " + result);
+            // Use default value based on uriPolicyConfig
+            if (result == null) {
+                result = Enum.valueOf(AuthzDecision.class, parent.getUriPolicyConfig().getDefaultDecision());
+                if (log.isTraceEnabled()) {
+                    log.trace("No rule matched. Will use default decision: " + result);
+                }
             }
+            sink.accept(AuthzConstants.ATTR_AUTHZ_POLICY_RESULT, result.toString());
         }
-        sink.accept(AuthzConstants.ATTR_AUTHZ_POLICY_RESULT, result.toString());
         sink.close();
     }
 }

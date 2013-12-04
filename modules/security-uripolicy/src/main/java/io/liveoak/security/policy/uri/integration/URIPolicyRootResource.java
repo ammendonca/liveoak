@@ -8,6 +8,7 @@ package io.liveoak.security.policy.uri.integration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import io.liveoak.container.auth.AuthzConstants;
 import io.liveoak.container.auth.SimpleLogger;
 import io.liveoak.security.policy.uri.complex.URIPolicy;
 import io.liveoak.security.policy.uri.complex.URIPolicyRule;
+import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.spi.InitializationException;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.ResourceContext;
@@ -51,13 +53,13 @@ public class URIPolicyRootResource implements RootResource {
     public void initialize(ResourceContext context) throws InitializationException {
         String policyConfig = context.config().get("policy-config", null);
         if (policyConfig != null) {
-            uriPolicyConfig = readPolicyConfiguration(context, policyConfig);
-            log.info("Read uri policy config: " + uriPolicyConfig);
-
+            this.uriPolicyConfig = readPolicyConfiguration(context, policyConfig);
         } else {
             log.info("Policy config is null. Will use the default one");
-            // TODO:
+            this.uriPolicyConfig = createDefaultConfig();
         }
+
+        log.info("URIPolicy config: " + uriPolicyConfig);
 
         createPolicy();
         registerChildrenResources();
@@ -66,14 +68,23 @@ public class URIPolicyRootResource implements RootResource {
     protected URIPolicyConfig readPolicyConfiguration(ResourceContext context, String fileLocation) throws InitializationException {
         File configFile = new File(fileLocation);
         if (!configFile.exists()) {
-            throw new InitializationException("URIPolicyConfig file on location: " + fileLocation + " doesn't exists");
+            log.info("URIPolicyConfig file on location: " + fileLocation + " doesn't exists. Will use default config");
+            return createDefaultConfig();
+        } else {
+            try {
+                return objectMapper.readValue(configFile, URIPolicyConfig.class);
+            } catch (IOException ioe) {
+                throw new InitializationException("Exception during parsing file: " + configFile, ioe);
+            }
         }
+    }
 
-        try {
-            return objectMapper.readValue(configFile, URIPolicyConfig.class);
-        } catch (IOException ioe) {
-            throw new InitializationException("Exception during parsing file: " + configFile, ioe);
-        }
+    // Accept everything by default
+    protected URIPolicyConfig createDefaultConfig() {
+        URIPolicyConfig config = new URIPolicyConfig();
+        config.setDefaultDecision(AuthzDecision.ACCEPT.toString());
+        config.setUriRules(Collections.EMPTY_LIST);
+        return config;
     }
 
     protected void createPolicy() {
@@ -140,7 +151,7 @@ public class URIPolicyRootResource implements RootResource {
 
     @Override
     public void readProperties(RequestContext ctx, PropertySink sink) throws Exception {
-        sink.accept("uriRules", "TODO");
+        sink.accept("uriPolicyConfig", uriPolicyConfig.toString());
         sink.close();
     }
 }

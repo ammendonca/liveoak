@@ -56,6 +56,10 @@
             <artifactId>janino</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.liveoak</groupId>
+            <artifactId>liveoak-test-tools</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

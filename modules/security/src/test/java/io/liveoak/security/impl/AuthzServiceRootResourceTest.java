@@ -52,7 +52,7 @@ public class AuthzServiceRootResourceTest extends AbstractResourceTestCase {
 
     @Test
     public void testAuthorizationRequest() throws Exception {
-        // Send request without requestContext attachment. It should fail with null message
+        // Send request without requestContext attachment. It should fail with "null error"
         RequestContext reqCtx = new RequestContext.Builder().build();
         ResourceState state = connector.read(reqCtx, "/authz/authzCheck");
         String error = (String)state.getProperty("error");
