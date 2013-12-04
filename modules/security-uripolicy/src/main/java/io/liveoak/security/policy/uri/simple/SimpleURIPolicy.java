@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * TODO: To be removed later (probably)
+ *
  * Simple URI policy, which allows just wildcards (no custom patterns) in ResourcePath segments. Doesn't check request parameters
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -45,7 +47,7 @@ public class SimpleURIPolicy implements AuthzPolicy {
 
 
     @Override
-    public void init() {
+    public void initialize() {
         // Empty by default
     }
 

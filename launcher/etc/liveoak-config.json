@@ -70,5 +70,14 @@ resources: {
             service-class-name: 'io.liveoak.security.impl.PolicyBasedAuthzService',
             authz-config: '${user.dir}/authz-config.json'
         }
+    },
+
+    uriPolicy: {
+        type: 'jboss-module',
+        module-id: 'io.liveoak.security.uripolicy',
+        class-name: 'io.liveoak.security.policy.uri.integration.URIPolicyRootResource',
+        config: {
+            policy-config: '${user.dir}/uri-policy-config.json'
+        }
     }
 }}

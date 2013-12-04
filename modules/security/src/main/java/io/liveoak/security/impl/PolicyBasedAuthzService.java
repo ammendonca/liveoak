@@ -87,7 +87,7 @@ public class PolicyBasedAuthzService implements AuthzService {
         try {
             ResourceState resourceState = this.directConnector.read(authzRequest, policyEndpoint);
             Object result = resourceState.getProperty(AuthzConstants.ATTR_AUTHZ_POLICY_RESULT);
-            return (AuthzDecision)result;
+            return Enum.valueOf(AuthzDecision.class, (String)result);
         } catch (InterruptedException ie) {
             log.error("Interrupted", ie);
             Thread.currentThread().interrupt();

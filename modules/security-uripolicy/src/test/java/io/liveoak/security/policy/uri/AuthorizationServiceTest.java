@@ -87,15 +87,15 @@ public class AuthorizationServiceTest {
 
     @Test
     public void testComplexURIPolicy() {
-        // Allowed thanks to DemoURIPolicy.rule1 and DemoSimpleURIPolicy.rule1
+        // Allowed thanks to DemoURIPolicyWorker.rule1 and DemoSimpleURIPolicy.rule1
         AuthzRequestContext req1 = createAuthRequestContext("/droolsTest/foo", RequestType.READ, new String[]{"role1"}, new String[]{}, ResourceParams.NONE);
         Assert.assertTrue(service.isAuthorized(req1));
 
-        // Allowed thanks to DemoSimpleURIPolicy.rule1 (DemoURIPolicy ignores it because there is no role1)
+        // Allowed thanks to DemoSimpleURIPolicy.rule1 (DemoURIPolicyWorker ignores it because there is no role1)
         AuthzRequestContext req2 = createAuthRequestContext("/droolsTest/foo", RequestType.READ, new String[]{}, new String[]{}, ResourceParams.NONE);
         Assert.assertTrue(service.isAuthorized(req2));
 
-        // Rejected thanks to DemoURIPolicy.rule7
+        // Rejected thanks to DemoURIPolicyWorker.rule7
         AuthzRequestContext req3 = createAuthRequestContext("/droolsTest/foo", RequestType.READ, new String[]{"evilRole"}, new String[]{}, ResourceParams.NONE);
         Assert.assertFalse(service.isAuthorized(req3));
 
@@ -106,7 +106,7 @@ public class AuthorizationServiceTest {
         AuthzRequestContext req4 = createAuthRequestContext("/droolsTest/foo/bar", RequestType.READ, new String[]{"role1"}, new String[]{}, AuthTestResourceParams.instance(req4params));
         Assert.assertTrue(service.isAuthorized(req4));
 
-        // Ignored in DemoURIPolicy.rule2 becaused foo<10 and /droolsTest/foo/bar is not mapped to DemoSimpleURIPolicy
+        // Ignored in DemoURIPolicyWorker.rule2 becaused foo<10 and /droolsTest/foo/bar is not mapped to DemoSimpleURIPolicy
         Map<String, List<String>> req5params = new HashMap<>();
         req5params.put("param1", Arrays.asList(new String[]{"foo"}));
         req5params.put("param2", Arrays.asList(new String[]{"9"}));

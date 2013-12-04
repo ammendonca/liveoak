@@ -16,7 +16,7 @@ import io.liveoak.spi.RequestType;
 public class DemoSimpleURIPolicy extends SimpleURIPolicy {
 
     @Override
-    public void init() {
+    public void initialize() {
         // Everything is allowed, unless specially configured
         addRolePolicy("*", "*", "*", "*", ALLOW_ALL_ROLES_CONTAINER);
 

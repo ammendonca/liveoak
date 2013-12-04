@@ -36,16 +36,25 @@ public class URIPolicy implements AuthzPolicy {
     // TODO: Replace with real logging
     private static final SimpleLogger log = new SimpleLogger(URIPolicy.class);
 
+    // Logger to be used inside drools processing
+    private static final SimpleLogger droolsLog = new SimpleLogger("DROOLS");
+
     private RuleBase ruleBase;
 
     private final Executor executor = Executors.newSingleThreadExecutor();
+    private final InitializationWorker worker;
     private CountDownLatch latch = new CountDownLatch(1);
 
+    public URIPolicy(InitializationWorker worker) {
+        this.worker = worker;
+    }
+
     @Override
-    public void init() {
+    public void initialize() {
         // Execute initialization asynchronously
         Runnable initTask = () -> {
             doInit();
+            worker.run(this);
             latch.countDown();
         };
         executor.execute(initTask);
@@ -68,7 +77,7 @@ public class URIPolicy implements AuthzPolicy {
     }
 
 
-    public void addURIPolicyEntry(URIPolicyRule uriPolicyRule) {
+    public void addURIPolicyRule(URIPolicyRule uriPolicyRule) {
         InputStream templateStream = URIPolicy.class.getClassLoader().getResourceAsStream("templates/URIPolicyTemplate.drl");
         URIPolicyTemplateDataProvider tdp = new URIPolicyTemplateDataProvider(uriPolicyRule);
         DataProviderCompiler converter = new DataProviderCompiler();

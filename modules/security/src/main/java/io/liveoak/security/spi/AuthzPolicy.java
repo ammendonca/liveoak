@@ -15,7 +15,7 @@ public interface AuthzPolicy {
     /**
      * Perform some needed initialization steps for this policy.
      */
-    void init();
+    void initialize();
 
     /**
      * Decide if request is authorized, not authorized or if we don't know

@@ -69,7 +69,7 @@ public class AuthzServiceRootResource implements RootResource {
 
         String authorizationConfig = context.config().get("authz-config", null);
         if (authorizationConfig != null) {
-            AuthzServiceConfig authzServiceConfig = readPolicyConfiguration(context, authorizationConfig);
+            AuthzServiceConfig authzServiceConfig = readPoliciesConfiguration(context, authorizationConfig);
             log.info("Read policies config: " + authzServiceConfig);
 
             for (AuthzPolicyEntry configEntry : authzServiceConfig.getPolicies()) {
@@ -103,7 +103,7 @@ public class AuthzServiceRootResource implements RootResource {
         }
     }
 
-    protected AuthzServiceConfig readPolicyConfiguration(ResourceContext context, String fileLocation) throws InitializationException {
+    protected AuthzServiceConfig readPoliciesConfiguration(ResourceContext context, String fileLocation) throws InitializationException {
         File configFile = new File(fileLocation);
         if (!configFile.exists()) {
             throw new InitializationException("AuthzService config file on location: " + fileLocation + " doesn't exists");
@@ -122,7 +122,7 @@ public class AuthzServiceRootResource implements RootResource {
 
     @Override
     public void destroy() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Nothing here for now
     }
 
     @Override

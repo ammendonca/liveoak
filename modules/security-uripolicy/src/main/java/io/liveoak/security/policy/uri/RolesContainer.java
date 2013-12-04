@@ -36,7 +36,7 @@ public class RolesContainer {
         return this;
     }
 
-    public RolesContainer addDeniedmRole(String roleName) {
+    public RolesContainer addDeniedRole(String roleName) {
         if (deniedRoles == null) {
             deniedRoles = new HashSet<>();
         }
@@ -124,6 +124,12 @@ public class RolesContainer {
 
     public AuthzDecision isRolesAllowed(Collection<String> roles) {
         boolean anyAllowed = false;
+
+        // Just to enforce * rule if it's used in allowedRoles or deniedRoles
+        if (roles == null) {
+            return isRoleAllowed("__PLACEHOLDER__");
+        }
+
         for (String role : roles) {
             AuthzDecision authDecision = isRoleAllowed(role);
             if (authDecision == AuthzDecision.REJECT) {

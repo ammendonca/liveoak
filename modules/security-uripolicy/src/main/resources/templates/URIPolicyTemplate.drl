@@ -22,11 +22,14 @@ import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.spi.RequestType;
 import io.liveoak.spi.ResourcePath;
 import io.liveoak.spi.SecurityContext;
+import io.liveoak.container.auth.SimpleLogger;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+
+import static io.liveoak.security.policy.uri.complex.LoggerHelper.logger;
 
 dialect "mvel"
 
@@ -44,7 +47,9 @@ when
                             requestTypeMatches("URIPolicyRule_@{POLICY_COUNTER}", requestType, "@{REQUEST_TYPE}")
                           )
 then
-  System.out.println("Triggered rule: URIPolicyRule_@{POLICY_COUNTER} . All conditions matched");
+  if (logger().isTraceEnabled()) {
+    logger().trace("Triggered rule: URIPolicyRule_@{POLICY_COUNTER} . All conditions matched");
+  }
 
   RolesContainer container = new RolesContainer();
   container.addAllAllowedRoles( Arrays.asList(new String[] { @{ALLOWED_ROLES} }) );
@@ -73,7 +78,9 @@ when
   RulesProcessingResult(decision == AuthzDecision.ACCEPT || == AuthzDecision.REJECT, lastProcessedPriority > @{CHECK_PRIORITY})
   $endSemaphore: EndSemaphore( finished == false )
 then
-  System.out.println("Triggered rule: CheckFinished_@{POLICY_COUNTER}, priority: " + @{CHECK_PRIORITY} + " . Going to stop processing other URI rules");
+  if (logger().isTraceEnabled()) {
+    logger().trace("Triggered rule: CheckFinished_@{POLICY_COUNTER}, priority: " + @{CHECK_PRIORITY} + " . Going to stop processing other URI rules");
+  }
   modify ($endSemaphore) {
     finished = true;
   }

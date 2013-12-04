@@ -24,6 +24,10 @@ public class SimpleLogger {
         simpleClassName = clazz.getSimpleName();
     }
 
+    public SimpleLogger(String simpleClassName) {
+        this.simpleClassName = simpleClassName;
+    }
+
     public void info(String message) {
         log("INFO", message, System.out);
     }

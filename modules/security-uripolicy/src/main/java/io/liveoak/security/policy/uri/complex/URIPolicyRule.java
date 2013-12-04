@@ -37,8 +37,8 @@ public class URIPolicyRule {
         this.deniedUsers = deniedUsers;
     }
 
-    public static URIPolicyRule createEntry(int priority, String uriPattern, String queryParamsCondition, String requestType,
-                                             String allowedRoles, String deniedRoles, String allowedUsers, String deniedUsers) {
+    public static URIPolicyRule createRule(int priority, String uriPattern, String queryParamsCondition, String requestType,
+                                           String allowedRoles, String deniedRoles, String allowedUsers, String deniedUsers) {
 
         // From uriPattern from "user-friendly" form to "drools-friendly" form
         String formattedPattern = DroolsFormattingUtils.formatStringToDrools(uriPattern);

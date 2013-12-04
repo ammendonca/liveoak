@@ -7,6 +7,7 @@ package io.liveoak.security.policy.uri;
 
 import io.liveoak.container.DefaultResourceParams;
 import io.liveoak.container.DefaultSecurityContext;
+import io.liveoak.security.policy.uri.complex.URIPolicy;
 import io.liveoak.security.spi.AuthzDecision;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.RequestType;
@@ -29,8 +30,8 @@ public class URIPolicyTest {
 
     @Test
     public void testPolicy() {
-        DemoURIPolicy uriPolicy = new DemoURIPolicy();
-        uriPolicy.init();
+        URIPolicy uriPolicy = new URIPolicy(new DemoURIPolicyWorker());
+        uriPolicy.initialize();
 
         Set<String> johnRoles = new HashSet<>();
         johnRoles.add("role1");

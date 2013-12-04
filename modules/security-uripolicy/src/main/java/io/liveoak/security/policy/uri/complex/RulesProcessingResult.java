@@ -21,15 +21,20 @@ public class RulesProcessingResult {
 
     private static final SimpleLogger log = new SimpleLogger(RulesProcessingResult.class);
 
-    private AuthzDecision current = AuthzDecision.IGNORE;
+    private AuthzDecision current = null;
     private Set<String> processedRules = new HashSet<String>();
     private int lastProcessedPriority;
 
     public void mergeDecision(AuthzDecision newDecision) {
-        //if (log.isTraceEnabled()) {
-        log.trace("Merging decision: old=" + current + ", new=" + newDecision);
-        //}
-        current = current.mergeDecision(newDecision);
+        if (log.isTraceEnabled()) {
+            log.trace("Merging decision: old=" + current + ", new=" + newDecision);
+        }
+
+        if (current == null) {
+            current = newDecision;
+        } else {
+            current = current.mergeDecision(newDecision);
+        }
     }
 
     public AuthzDecision getDecision() {
